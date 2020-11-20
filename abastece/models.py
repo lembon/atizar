@@ -17,6 +17,7 @@ class Contacto(models.Model):
     web = models.URLField(blank=True)
     
 class Nodo(models.Model):
+    nombre = models.CharField(max_length=200)
     referentes = models.ManyToManyField(Contacto)
     domicilio = models.ForeignKey(Domicilio, models.PROTECT) #Domicilio de funcionamiento del nodo
     domicilio_recepcion = models.ForeignKey(Domicilio, models.SET_NULL, null = True, blank = True, related_name="domicilio_recepcion")
