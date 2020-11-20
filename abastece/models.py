@@ -18,11 +18,17 @@ class Contacto(models.Model):
     
 class Nodo(models.Model):
     nombre = models.CharField(max_length=200)
-    referentes = models.ManyToManyField(Contacto)
     domicilio = models.ForeignKey(Domicilio, models.PROTECT) #Domicilio de funcionamiento del nodo
     domicilio_recepcion = models.ForeignKey(Domicilio, models.SET_NULL, null = True, blank = True, related_name="domicilio_recepcion")
+    miembros = models.ManyToManyField(Contacto, through="Membresia")
     
-class Miembro(models.Model):
+class Membresia(models.Model):
+    TIPO_MIEMBRO_CHOICES = (
+      (1, 'comun'),
+      (2, 'referente'),
+    )
+
+    rol = models.PositiveSmallIntegerField(choices=TIPO_MIEMBRO_CHOICES)
     contacto = models.ForeignKey(Contacto, models.CASCADE)
     nodo = models.ForeignKey(Nodo, models.CASCADE)
 
@@ -59,7 +65,7 @@ class ProductoCiclo(models.Model):   ###O va ProductoVariedad?
 class Pedido(models.Model):
     ciclo = models.ForeignKey(Ciclo, models.CASCADE)
     timestamp = models.DateTimeField('fecha y hora')
-    miembro = models.ForeignKey(Miembro, models.CASCADE)
+    consumidor = models.ForeignKey(Contacto, models.CASCADE)
 
 class ItemPedido(models.Model):
     pedido = models.ForeignKey(Pedido, models.CASCADE)
