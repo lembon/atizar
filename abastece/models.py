@@ -1,4 +1,10 @@
 from django.db import models
+from django.utils.html import mark_safe
+from django.conf import settings
+
+
+def get_upload_path(instance, filename):
+    return 'contactos/{}/{}'.format(instance.upload_path(), filename)
 
 
 class Domicilio(models.Model):
@@ -26,10 +32,20 @@ class Contacto(models.Model):
     def __str__(self):
         return self.nombre_fantasia or "{} {}".format(self.nombre, self.apellido)
 
+    def get_web_name(self):
+        return self.__str__().lower().replace(' ', '_')
+
 
 class ImagenContacto(models.Model):
     contacto = models.ForeignKey(Contacto, models.CASCADE)
-    imagen = models.ImageField
+    imagen = models.ImageField(upload_to=get_upload_path)
+
+    def image_tag(self):
+        return mark_safe('<img src="%s%s" width="150" height="150" />' % (settings.MEDIA_URL, self.imagen))
+    image_tag.short_description = 'Imagen'
+
+    def upload_path(self):
+        return self.contacto.get_web_name()
 
 
 class Nodo(models.Model):
@@ -63,7 +79,7 @@ class Producto(models.Model):
         ("U", 'unidades'),
         ("g", 'gramos'),
         ("kg", 'kilogramos'),
-        ("cm3", 'centímetros cubicos'),
+        ("cm3", 'centímetros cúbicos'),
         ("ml", 'mililitros'),
         ("l", 'litros'),
         ("m", 'metros')
@@ -75,9 +91,9 @@ class Producto(models.Model):
     cantidad = models.IntegerField()  # Ver de agregar MinValueValidator
     unidad = models.CharField(max_length=100, choices=UNIDADES)  # VER de poner choice
     costo_produccion = models.DecimalField(max_digits=8, decimal_places=2)
-    costo_transporte = models.DecimalField(max_digits=8, decimal_places=2)
-    costo_financiero = models.DecimalField(max_digits=8, decimal_places=2)
-    costo_postproceso = models.DecimalField(max_digits=8, decimal_places=2)
+    costo_transporte = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    costo_financiero = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    costo_postproceso = models.DecimalField(max_digits=8, decimal_places=2, default=0)
 
     def __str__(self):
         return self.titulo
@@ -93,29 +109,58 @@ class ProductoVariedad(models.Model):
 
 
 class ImagenProducto(models.Model):
-    producto = models.ForeignKey(Producto, models.CASCADE)
-    imagen = models.ImageField
-    # https://stackoverflow.com/a/537966
+    producto = models.ForeignKey(Producto, models.CASCADE, related_name='images')
+    imagen = models.ImageField(upload_to=get_upload_path)
+
+    def image_tag(self):
+        return mark_safe('<img src="%s%s" width="150" height="150" />' % (settings.MEDIA_URL, self.imagen))
+
+    image_tag.short_description = 'Imagen'
+
+    def upload_path(self):
+        return self.producto.productor.get_web_name()
 
 
 class Ciclo(models.Model):
     inicio = models.DateTimeField('inicio pedidos')
     cierre = models.DateTimeField('cierre pedidos')
+    aporte_deposito = models.FloatField(default=0)  # Ver de agregar Validators
+    aporte_central = models.FloatField(default=0)
+    aporte_nodo = models.FloatField(default=0)
+    aporte_logistica = models.FloatField(default=0)
+    productos = models.ManyToManyField(Producto, related_name='ciclos', through='ProductoCiclo')
+    variedades = models.ManyToManyField(ProductoVariedad, related_name='ciclos', through='ProductoVariedadCiclo')
 
 
-class ProductoCiclo(models.Model):  ###O va ProductoVariedad?
+class ProductoCiclo(models.Model):
     ciclo = models.ForeignKey(Ciclo, models.CASCADE)
     producto = models.ForeignKey(Producto, models.CASCADE)
+    costo_produccion = models.DecimalField(max_digits=8, decimal_places=2)
+    costo_transporte = models.DecimalField(max_digits=8, decimal_places=2)
+    costo_financiero = models.DecimalField(max_digits=8, decimal_places=2)
+    costo_postproceso = models.DecimalField(max_digits=8, decimal_places=2)
     precio = models.DecimalField(max_digits=8, decimal_places=2)
+    """ HAcer un método precio_sugerido que sea el resultante de tod el cálculo y setearlo como default al precio. 
+    Y que el precio no pueda variar más de $x con respecto a eso"""
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['ciclo', 'producto'], name='unico producto por ciclo')
+        ]
+
+
+class ProductoVariedadCiclo(models.Model):
+    ciclo = models.ForeignKey(Ciclo, models.CASCADE)
+    producto_variedad = models.ForeignKey(ProductoVariedad, models.CASCADE)
+    disponible = models.IntegerField()  # Ver de agregar MinValueValidator
 
 
 class Pedido(models.Model):
-    ciclo = models.ForeignKey(Ciclo, models.CASCADE)
     timestamp = models.DateTimeField('fecha y hora')  # Hacer Editable = False
     consumidor = models.ForeignKey(Membresia, models.CASCADE)
 
 
 class ItemPedido(models.Model):
     pedido = models.ForeignKey(Pedido, models.CASCADE)
-    producto_variedad = models.ForeignKey(ProductoVariedad, models.CASCADE)
+    producto_variedad_ciclo = models.ForeignKey(ProductoVariedadCiclo, models.CASCADE)
     cantidad = models.IntegerField
