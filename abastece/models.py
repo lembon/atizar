@@ -35,6 +35,11 @@ class Contacto(models.Model):
     def get_web_name(self):
         return self.__str__().lower().replace(' ', '_')
 
+    def is_productor(self):
+        return bool(self.productos.count())
+    is_productor.boolean = True
+    is_productor.short_description = '¿Es Productor?'
+
 
 class ImagenContacto(models.Model):
     contacto = models.ForeignKey(Contacto, models.CASCADE)
@@ -70,7 +75,7 @@ class Membresia(models.Model):
     )
 
     rol = models.PositiveSmallIntegerField(choices=ROLES_NODO)
-    contacto = models.ForeignKey(Contacto, models.CASCADE)
+    contacto = models.ForeignKey(Contacto, models.CASCADE, related_name='membresias')
     nodo = models.ForeignKey(Nodo, models.CASCADE)
 
 
@@ -84,7 +89,7 @@ class Producto(models.Model):
         ("l", 'litros'),
         ("m", 'metros')
     )
-    productor = models.ForeignKey(Contacto, models.CASCADE)
+    productor = models.ForeignKey(Contacto, models.CASCADE, related_name='productos')
     titulo = models.CharField(max_length=200, unique=True)
     descripcion = models.TextField(blank=True)
     envase = models.CharField(max_length=200, blank=True)
