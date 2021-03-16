@@ -1,7 +1,9 @@
 from django.contrib import admin
-from .models import Producto, ImagenProducto, Contacto, ImagenContacto, Nodo, Membresia,\
-    ProductoVariedad, Domicilio
 from django.utils.translation import gettext_lazy as _
+
+from .models import Producto, ImagenProducto, Contacto, ImagenContacto, Nodo, Membresia, \
+    ProductoVariedad, Domicilio
+
 
 class IsProductorListFilter(admin.SimpleListFilter):
     title = _('participacion')
@@ -71,6 +73,7 @@ class MembresiaInline(admin.TabularInline):
 
 @admin.register(Nodo)
 class NodoAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'domicilio', 'get_referente_nombre', 'get_referente_telefono')
     fieldsets = [
         (None, {'fields': ['nombre', 'domicilio', 'domicilio_recepcion']}),
     ]

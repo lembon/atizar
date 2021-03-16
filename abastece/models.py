@@ -1,6 +1,6 @@
+from django.conf import settings
 from django.db import models
 from django.utils.html import mark_safe
-from django.conf import settings
 
 
 def get_upload_path(instance, filename):
@@ -67,7 +67,20 @@ class Nodo(models.Model):
     def __str__(self):
         return self.nombre
 
+    def get_referente(self):
+        return self.membresia_set.filter(rol=2).first().contacto
 
+    def get_referente_nombre(self):
+        contacto = self.get_referente()
+        return contacto.nombre + ' ' + contacto.apellido
+
+    get_referente_nombre.short_description = 'Referente'
+
+    def get_referente_telefono(self):
+        contacto = self.get_referente()
+        return contacto.telefono
+
+    get_referente_telefono.short_description = 'Teléfono'
 class Membresia(models.Model):
     ROLES_NODO = (
         (1, 'comun'),
