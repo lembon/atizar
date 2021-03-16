@@ -116,6 +116,10 @@ class Producto(models.Model):
     def __str__(self):
         return self.titulo
 
+    def get_descripcion_corta(self):
+        return self.descripcion.split('\n')[0]
+
+    get_descripcion_corta.short_description = 'Detalle'
 
 class ProductoVariedad(models.Model):
     producto = models.ForeignKey(Producto, models.CASCADE)

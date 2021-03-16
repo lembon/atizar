@@ -25,6 +25,7 @@ class IsProductorListFilter(admin.SimpleListFilter):
         elif self.value() == 'referente':
             return queryset.filter(membresias__rol=2)
 
+
 class ImagenContactoInline(admin.TabularInline):
     model = ImagenContacto
     extra = 1
@@ -57,6 +58,11 @@ class ImagenProductoInline(admin.TabularInline):
 
 @admin.register(Producto)
 class ProductoAdmin(admin.ModelAdmin):
+    list_display = ('productor', '__str__', 'get_descripcion_corta', 'envase', 'cantidad', 'unidad',)
+    list_filter = (
+        ('productor', admin.RelatedOnlyFieldListFilter),
+    )
+    search_fields = ('productor__nombre_fantasia', 'titulo', 'descripcion',)
     fieldsets = [
         (None, {'fields': ['productor', 'titulo', 'descripcion']}),
         ('Presentación', {'fields': [('envase', 'cantidad', 'unidad')]}),
