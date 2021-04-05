@@ -1,6 +1,6 @@
+from django.conf import settings
 from django.db import models
 from django.utils.html import mark_safe
-from django.conf import settings
 
 
 def get_upload_path(instance, filename):
@@ -35,6 +35,11 @@ class Contacto(models.Model):
     def get_web_name(self):
         return self.__str__().lower().replace(' ', '_')
 
+    def is_productor(self):
+        return bool(self.productos.count())
+    is_productor.boolean = True
+    is_productor.short_description = '¿Es Productor?'
+
 
 class ImagenContacto(models.Model):
     contacto = models.ForeignKey(Contacto, models.CASCADE)
@@ -62,7 +67,20 @@ class Nodo(models.Model):
     def __str__(self):
         return self.nombre
 
+    def get_referente(self):
+        return self.membresia_set.filter(rol=2).first().contacto
 
+    def get_referente_nombre(self):
+        contacto = self.get_referente()
+        return contacto.nombre + ' ' + contacto.apellido
+
+    get_referente_nombre.short_description = 'Referente'
+
+    def get_referente_telefono(self):
+        contacto = self.get_referente()
+        return contacto.telefono
+
+    get_referente_telefono.short_description = 'Teléfono'
 class Membresia(models.Model):
     ROLES_NODO = (
         (1, 'comun'),
@@ -70,7 +88,7 @@ class Membresia(models.Model):
     )
 
     rol = models.PositiveSmallIntegerField(choices=ROLES_NODO)
-    contacto = models.ForeignKey(Contacto, models.CASCADE)
+    contacto = models.ForeignKey(Contacto, models.CASCADE, related_name='membresias')
     nodo = models.ForeignKey(Nodo, models.CASCADE)
 
 
@@ -84,7 +102,7 @@ class Producto(models.Model):
         ("l", 'litros'),
         ("m", 'metros')
     )
-    productor = models.ForeignKey(Contacto, models.CASCADE)
+    productor = models.ForeignKey(Contacto, models.CASCADE, related_name='productos')
     titulo = models.CharField(max_length=200, unique=True)
     descripcion = models.TextField(blank=True)
     envase = models.CharField(max_length=200, blank=True)
@@ -98,6 +116,10 @@ class Producto(models.Model):
     def __str__(self):
         return self.titulo
 
+    def get_descripcion_corta(self):
+        return self.descripcion.split('\n')[0]
+
+    get_descripcion_corta.short_description = 'Detalle'
 
 class ProductoVariedad(models.Model):
     producto = models.ForeignKey(Producto, models.CASCADE)
