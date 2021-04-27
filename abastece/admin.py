@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
 from .models import Producto, ImagenProducto, Contacto, ImagenContacto, Nodo, Membresia, \
-    ProductoVariedad, Domicilio
+    ProductoVariedad, Domicilio, Ciclo, ProductoCiclo, ProductoVariedadCiclo
 
 
 class IsProductorListFilter(admin.SimpleListFilter):
@@ -71,6 +71,35 @@ class ProductoAdmin(admin.ModelAdmin):
     inlines = [ProductoVariedadInline, ImagenProductoInline]
 
 
+@admin.register(ProductoVariedad)
+class ProductoVariedadAdmin(admin.ModelAdmin):
+    list_display = ('get_productor', 'producto', '__str__', 'en_proximo_ciclo')
+    list_display_links = None
+    list_filter = (
+        ('producto__productor', admin.RelatedOnlyFieldListFilter),
+    )
+    search_fields = ('productor__nombre_fantasia', 'producto', 'descripcion',)
+
+    def get_productor(self, obj):
+        return obj.producto.productor
+
+    get_productor.admin_order_field = 'Productor'  # Allows column order sorting
+    get_productor.short_description = 'Productor'  # Renames column head
+
+    actions = ['agregar_a_ciclo']
+
+    def agregar_a_ciclo(self, request, queryset):
+        ciclo = Ciclo.objects.latest("inicio")
+        productos = Producto.objects.filter(productovariedad__in=queryset).distinct()
+        for producto in productos:
+            producto_ciclo, creado = ProductoCiclo.objects.get_or_create(producto=producto, ciclo=ciclo)
+
+        for variedad in queryset:
+            producto_variedad_ciclo, creado = ProductoVariedadCiclo.objects.get_or_create(producto_variedad=variedad,
+                                                                                          ciclo=ciclo)
+
+    agregar_a_ciclo.short_description = "Agregar variedades al próximo ciclo"
+
 class MembresiaInline(admin.TabularInline):
     model = Membresia
     extra = 1
@@ -97,4 +126,12 @@ class DomicilioAdmin(admin.ModelAdmin):
         Para permitir crear Domicilios a partir de foreign keys de otros modelos, pero ocultarlo del index.
         """
         return {}
-##
+
+
+@admin.register(Ciclo)
+class CicloAdmin(admin.ModelAdmin):
+    list_display = ('inicio', 'cierre', 'aporte_deposito', 'aporte_central', 'aporte_nodo', 'aporte_logistica')
+    fieldsets = [
+        (
+        None, {'fields': ['inicio', 'cierre', 'aporte_deposito', 'aporte_central', 'aporte_nodo', 'aporte_logistica']}),
+    ]

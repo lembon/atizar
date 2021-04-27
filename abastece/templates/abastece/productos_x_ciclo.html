@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Productos en el próximo Ciclo</title>
+
+    {% load bootstrap4 %}
+    {% bootstrap_css %}
+</head>
+<body>
+<div class="container">
+    <main role="main">
+        {% if variedades_en_ciclo %}
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Variedad</th>
+                <th>Precio</th>
+            </tr>
+            </thead>
+            {% for variedad in variedades_en_ciclo %}
+            <!--        <li><a href="/polls/{{ question.id }}/">{{ question.question_text }}</a></li>-->
+            <tr>
+                <td>{{ variedad.producto_variedad.producto.titulo }}</td>
+                <td>{{ variedad.producto_variedad.descripcion }}</td>
+                <td>{{ variedad.producto_ciclo.precio }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p>No hay variedades en el ciclo.</p>
+        {% endif %}
+    </main>
+</div>
+{% bootstrap_javascript jquery='full' %}
+</body>
+</html>

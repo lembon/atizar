@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.conf import settings
 from django.db import models
 from django.utils.html import mark_safe
@@ -121,6 +123,7 @@ class Producto(models.Model):
 
     get_descripcion_corta.short_description = 'Detalle'
 
+
 class ProductoVariedad(models.Model):
     producto = models.ForeignKey(Producto, models.CASCADE)
     descripcion = models.CharField(max_length=200)
@@ -128,6 +131,13 @@ class ProductoVariedad(models.Model):
 
     def __str__(self):
         return self.descripcion
+
+    def en_proximo_ciclo(self):
+        proximo_ciclo = Ciclo.objects.latest("inicio")
+        return ProductoVariedadCiclo.objects.filter(ciclo=proximo_ciclo, producto_variedad=self).exists()
+
+    en_proximo_ciclo.boolean = True
+    en_proximo_ciclo.short_description = '¿En próximo ciclo?'
 
 
 class ImagenProducto(models.Model):
@@ -170,12 +180,31 @@ class ProductoCiclo(models.Model):
             models.UniqueConstraint(fields=['ciclo', 'producto'], name='unico producto por ciclo')
         ]
 
+    def save(self, *args, **kwargs):
+        self.costo_produccion = self.producto.costo_produccion
+        self.costo_transporte = self.producto.costo_transporte
+        self.costo_financiero = self.producto.costo_financiero
+        self.costo_postproceso = self.producto.costo_postproceso
+        self.precio = self.precio_sugerido()
+        super(ProductoCiclo, self).save(*args, **kwargs)
+
+    def precio_sugerido(self):
+        costos = self.costo_produccion + self.costo_transporte + self.costo_financiero + self.costo_postproceso
+        aportes = Decimal(
+            self.ciclo.aporte_deposito + self.ciclo.aporte_central + self.ciclo.aporte_nodo + self.ciclo.aporte_logistica)
+        return costos + costos * aportes / 100
 
 class ProductoVariedadCiclo(models.Model):
     ciclo = models.ForeignKey(Ciclo, models.CASCADE)
     producto_variedad = models.ForeignKey(ProductoVariedad, models.CASCADE)
     disponible = models.IntegerField()  # Ver de agregar MinValueValidator
 
+    def save(self, *args, **kwargs):
+        self.disponible = self.producto_variedad.disponible
+        super(ProductoVariedadCiclo, self).save(*args, **kwargs)
+
+    def producto_ciclo(self):
+        return ProductoCiclo.objects.get(ciclo=self.ciclo, producto=self.producto_variedad.producto)
 
 class Pedido(models.Model):
     timestamp = models.DateTimeField('fecha y hora')  # Hacer Editable = False
