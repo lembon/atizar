@@ -86,7 +86,7 @@ class ProductoVariedadAdmin(admin.ModelAdmin):
     get_productor.admin_order_field = 'Productor'  # Allows column order sorting
     get_productor.short_description = 'Productor'  # Renames column head
 
-    actions = ['agregar_a_ciclo']
+    actions = ['agregar_a_ciclo', 'quitar_de_ciclo']
 
     def agregar_a_ciclo(self, request, queryset):
         ciclo = Ciclo.objects.latest("inicio")
@@ -98,7 +98,19 @@ class ProductoVariedadAdmin(admin.ModelAdmin):
             producto_variedad_ciclo, creado = ProductoVariedadCiclo.objects.get_or_create(producto_variedad=variedad,
                                                                                           ciclo=ciclo)
 
-    agregar_a_ciclo.short_description = "Agregar variedades al próximo ciclo"
+    agregar_a_ciclo.short_description = "Agregar al próximo ciclo"
+
+    def quitar_de_ciclo(self, request, queryset):
+        ciclo = Ciclo.objects.latest("inicio")
+        for variedad in queryset:
+            ProductoVariedadCiclo.objects.get(producto_variedad=variedad, ciclo=ciclo).delete()
+
+        productos = Producto.objects.filter(productovariedad__in=queryset).distinct()
+        for producto in productos:
+            if not ProductoVariedadCiclo.objects.filter(producto_variedad__producto=producto, ciclo=ciclo).exists():
+                ProductoCiclo.objects.filter(producto=producto, ciclo=ciclo).delete()
+
+    quitar_de_ciclo.short_description = "Quitar del próximo ciclo"
 
 class MembresiaInline(admin.TabularInline):
     model = Membresia
@@ -122,9 +134,7 @@ class DomicilioAdmin(admin.ModelAdmin):
     ]
 
     def get_model_perms(self, request):
-        """
-        Para permitir crear Domicilios a partir de foreign keys de otros modelos, pero ocultarlo del index.
-        """
+        # Para permitir crear Domicilios a partir de foreign keys de otros modelos, pero ocultarlo del index.
         return {}
 
 
@@ -135,3 +145,14 @@ class CicloAdmin(admin.ModelAdmin):
         (
         None, {'fields': ['inicio', 'cierre', 'aporte_deposito', 'aporte_central', 'aporte_nodo', 'aporte_logistica']}),
     ]
+
+
+@admin.register(ProductoCiclo)
+class ProductoCicloAdmin(admin.ModelAdmin):
+    list_editable = ('precio',)
+    list_display = ('__str__', 'precio_sugerido', 'precio')
+    list_display_links = None
+
+    def get_queryset(self, request):
+        qs = super(ProductoCicloAdmin, self).get_queryset(request)
+        return qs.filter(ciclo=Ciclo.objects.latest("inicio"))

@@ -163,6 +163,8 @@ class Ciclo(models.Model):
     productos = models.ManyToManyField(Producto, related_name='ciclos', through='ProductoCiclo')
     variedades = models.ManyToManyField(ProductoVariedad, related_name='ciclos', through='ProductoVariedadCiclo')
 
+    def __str__(self):
+        return "Del {} al {}".format(self.inicio.date(), self.cierre.date())
 
 class ProductoCiclo(models.Model):
     ciclo = models.ForeignKey(Ciclo, models.CASCADE)
@@ -181,11 +183,12 @@ class ProductoCiclo(models.Model):
         ]
 
     def save(self, *args, **kwargs):
-        self.costo_produccion = self.producto.costo_produccion
-        self.costo_transporte = self.producto.costo_transporte
-        self.costo_financiero = self.producto.costo_financiero
-        self.costo_postproceso = self.producto.costo_postproceso
-        self.precio = self.precio_sugerido()
+        if not self.precio:
+            self.costo_produccion = self.producto.costo_produccion
+            self.costo_transporte = self.producto.costo_transporte
+            self.costo_financiero = self.producto.costo_financiero
+            self.costo_postproceso = self.producto.costo_postproceso
+            self.precio = self.precio_sugerido()
         super(ProductoCiclo, self).save(*args, **kwargs)
 
     def precio_sugerido(self):
@@ -193,6 +196,10 @@ class ProductoCiclo(models.Model):
         aportes = Decimal(
             self.ciclo.aporte_deposito + self.ciclo.aporte_central + self.ciclo.aporte_nodo + self.ciclo.aporte_logistica)
         return costos + costos * aportes / 100
+
+    def __str__(self):
+        return "{} - {}".format(self.producto.productor, self.producto.titulo)
+
 
 class ProductoVariedadCiclo(models.Model):
     ciclo = models.ForeignKey(Ciclo, models.CASCADE)
