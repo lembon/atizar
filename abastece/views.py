@@ -1,3 +1,10 @@
 from django.shortcuts import render
 
-# Create your views here.
+from .models import Ciclo, ProductoVariedadCiclo
+
+
+def productos_x_ciclo(request):
+    ciclo = Ciclo.objects.latest("inicio")
+    variedades_en_ciclo = ProductoVariedadCiclo.objects.filter(ciclo=ciclo)
+    context = {'variedades_en_ciclo': variedades_en_ciclo, }
+    return render(request, 'abastece/productos_x_ciclo.html', context)
