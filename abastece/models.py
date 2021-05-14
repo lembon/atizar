@@ -1,3 +1,4 @@
+import datetime
 from decimal import Decimal
 
 from django.conf import settings
@@ -174,8 +175,6 @@ class ProductoCiclo(models.Model):
     costo_financiero = models.DecimalField(max_digits=8, decimal_places=2)
     costo_postproceso = models.DecimalField(max_digits=8, decimal_places=2)
     precio = models.DecimalField(max_digits=8, decimal_places=2)
-    """ HAcer un método precio_sugerido que sea el resultante de tod el cálculo y setearlo como default al precio. 
-    Y que el precio no pueda variar más de $x con respecto a eso"""
 
     class Meta:
         constraints = [
@@ -214,7 +213,7 @@ class ProductoVariedadCiclo(models.Model):
         return ProductoCiclo.objects.get(ciclo=self.ciclo, producto=self.producto_variedad.producto)
 
 class Pedido(models.Model):
-    timestamp = models.DateTimeField('fecha y hora')  # Hacer Editable = False
+    timestamp = models.DateTimeField('fecha y hora', editable=False, default=datetime.datetime.now())
     consumidor = models.ForeignKey(Membresia, models.CASCADE)
 
 
