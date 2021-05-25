@@ -14,6 +14,7 @@
         <table class="table">
             <thead>
             <tr>
+                <th>Código</th>
                 <th>Productor</th>
                 <th>Producto</th>
                 <th>Detalles</th>
@@ -28,6 +29,7 @@
             {% for variedad in variedades_en_ciclo %}
             <!--        <li><a href="/polls/{{ question.id }}/">{{ question.question_text }}</a></li>-->
             <tr>
+                <td>{{ variedad.producto_variedad.pk }}</td>
                 <td>{{ variedad.producto_variedad.producto.productor }}</td>
                 <td>{{ variedad.producto_variedad.producto.titulo }}</td>
                 <td>{{ variedad.producto_variedad.producto.descripcion }}</td>

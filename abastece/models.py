@@ -76,14 +76,14 @@ class Nodo(models.Model):
     def get_referente_nombre(self):
         contacto = self.get_referente()
         return contacto.nombre + ' ' + contacto.apellido
-
     get_referente_nombre.short_description = 'Referente'
 
     def get_referente_telefono(self):
         contacto = self.get_referente()
         return contacto.telefono
-
     get_referente_telefono.short_description = 'Teléfono'
+
+
 class Membresia(models.Model):
     ROLES_NODO = (
         (1, 'comun'),
@@ -110,7 +110,7 @@ class Producto(models.Model):
     descripcion = models.TextField(blank=True)
     envase = models.CharField(max_length=200, blank=True)
     cantidad = models.IntegerField()  # Ver de agregar MinValueValidator
-    unidad = models.CharField(max_length=100, choices=UNIDADES)  # VER de poner choice
+    unidad = models.CharField(max_length=100, choices=UNIDADES)
     costo_produccion = models.DecimalField(max_digits=8, decimal_places=2)
     costo_transporte = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     costo_financiero = models.DecimalField(max_digits=8, decimal_places=2, default=0)
@@ -140,6 +140,13 @@ class ProductoVariedad(models.Model):
     en_proximo_ciclo.boolean = True
     en_proximo_ciclo.short_description = '¿En próximo ciclo?'
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['producto', 'descripcion'], name='unica desc de variedad por producto'),
+        ]
+        verbose_name = "Variedad de producto"
+        verbose_name_plural = "Variedades de producto"
+
 
 class ImagenProducto(models.Model):
     producto = models.ForeignKey(Producto, models.CASCADE, related_name='images')
@@ -166,6 +173,7 @@ class Ciclo(models.Model):
 
     def __str__(self):
         return "Del {} al {}".format(self.inicio.date(), self.cierre.date())
+
 
 class ProductoCiclo(models.Model):
     ciclo = models.ForeignKey(Ciclo, models.CASCADE)
@@ -212,10 +220,19 @@ class ProductoVariedadCiclo(models.Model):
     def producto_ciclo(self):
         return ProductoCiclo.objects.get(ciclo=self.ciclo, producto=self.producto_variedad.producto)
 
+    def __str__(self):
+        return "{:05d} | {}, {}, {} | {}".format(self.producto_variedad.pk,
+                                                 self.producto_variedad.producto.productor,
+                                                 self.producto_variedad.producto,
+                                                 self.producto_variedad,
+                                                 self.producto_ciclo().precio)
+
 class Pedido(models.Model):
     timestamp = models.DateTimeField('fecha y hora', editable=False, default=datetime.datetime.now())
     consumidor = models.ForeignKey(Membresia, models.CASCADE)
 
+    def __str__(self):
+        return str(self.consumidor)
 
 class ItemPedido(models.Model):
     pedido = models.ForeignKey(Pedido, models.CASCADE)

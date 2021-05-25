@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
 from .models import Producto, ImagenProducto, Contacto, ImagenContacto, Nodo, Membresia, \
-    ProductoVariedad, Domicilio, Ciclo, ProductoCiclo, ProductoVariedadCiclo
+    ProductoVariedad, Domicilio, Ciclo, ProductoCiclo, ProductoVariedadCiclo, Pedido, ItemPedido
 
 
 class IsProductorListFilter(admin.SimpleListFilter):
