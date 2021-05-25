@@ -156,3 +156,27 @@ class ProductoCicloAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super(ProductoCicloAdmin, self).get_queryset(request)
         return qs.filter(ciclo=Ciclo.objects.latest("inicio"))
+
+
+class ItemPedidoInline(admin.TabularInline):
+    model = ItemPedido
+    extra = 5
+    min_num = 1
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "producto_variedad_ciclo":
+            kwargs["queryset"] = ProductoVariedadCiclo.objects.filter(ciclo=Ciclo.objects.latest("inicio")).order_by(
+                'producto_variedad__producto__productor', 'producto_variedad__pk')
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+@admin.register(Pedido)
+class PedidoAdmin(admin.ModelAdmin):
+    list_display = ('consumidor',)
+
+    def get_queryset(self, request):
+        qs = super(PedidoAdmin, self).get_queryset(request)
+        ciclo = Ciclo.objects.latest("inicio")
+        return qs.filter(timestamp__range=(ciclo.inicio, ciclo.cierre))
+
+    inlines = [ItemPedidoInline]

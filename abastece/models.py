@@ -94,6 +94,9 @@ class Membresia(models.Model):
     contacto = models.ForeignKey(Contacto, models.CASCADE, related_name='membresias')
     nodo = models.ForeignKey(Nodo, models.CASCADE)
 
+    def __str__(self):
+        return "{}, {} (Nodo {}, {})".format(self.contacto.apellido, self.contacto.nombre, self.nodo,
+                                             self.get_rol_display())
 
 class Producto(models.Model):
     UNIDADES = (
@@ -127,7 +130,7 @@ class Producto(models.Model):
 
 class ProductoVariedad(models.Model):
     producto = models.ForeignKey(Producto, models.CASCADE)
-    descripcion = models.CharField(max_length=200)
+    descripcion = models.CharField(max_length=200, default="UNICA")
     disponible = models.IntegerField()  # Ver de agregar MinValueValidator
 
     def __str__(self):
@@ -188,6 +191,8 @@ class ProductoCiclo(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['ciclo', 'producto'], name='unico producto por ciclo')
         ]
+        verbose_name = "Producto en ciclo"
+        verbose_name_plural = "Productos en ciclo"
 
     def save(self, *args, **kwargs):
         if not self.precio:
@@ -227,6 +232,7 @@ class ProductoVariedadCiclo(models.Model):
                                                  self.producto_variedad,
                                                  self.producto_ciclo().precio)
 
+
 class Pedido(models.Model):
     timestamp = models.DateTimeField('fecha y hora', editable=False, default=datetime.datetime.now())
     consumidor = models.ForeignKey(Membresia, models.CASCADE)
@@ -237,4 +243,9 @@ class Pedido(models.Model):
 class ItemPedido(models.Model):
     pedido = models.ForeignKey(Pedido, models.CASCADE)
     producto_variedad_ciclo = models.ForeignKey(ProductoVariedadCiclo, models.CASCADE)
-    cantidad = models.IntegerField
+    cantidad = models.IntegerField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['pedido', 'producto_variedad_ciclo'], name='unico producto por pedido')
+        ]
