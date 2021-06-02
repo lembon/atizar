@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.forms.models import ModelForm
 from django.utils.translation import gettext_lazy as _
 
 from .models import Producto, ImagenProducto, Contacto, ImagenContacto, Nodo, Membresia, \
@@ -19,11 +20,11 @@ class IsProductorListFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
 
         if self.value() == 'productor':
-            return queryset.filter(productos__isnull=False)
+            return queryset.filter(productos__isnull=False).distinct()
         elif self.value() == 'consumidor':
-            return queryset.filter(membresias__isnull=False)
+            return queryset.filter(membresias__isnull=False).distinct()
         elif self.value() == 'referente':
-            return queryset.filter(membresias__rol=2)
+            return queryset.filter(membresias__rol=2).distinct()
 
 
 class ImagenContactoInline(admin.TabularInline):
@@ -44,10 +45,17 @@ class ContactoAdmin(admin.ModelAdmin):
     inlines = [ImagenContactoInline]
 
 
+class AlwaysChangedModelForm(ModelForm):
+    def has_changed(self):
+        # https://stackoverflow.com/a/3734700/1232955
+        return True
+
+
 class ProductoVariedadInline(admin.TabularInline):
     model = ProductoVariedad
-    extra = 1
+    extra = 0
     min_num = 1
+    form = AlwaysChangedModelForm
 
 
 class ImagenProductoInline(admin.TabularInline):
@@ -69,16 +77,18 @@ class ProductoAdmin(admin.ModelAdmin):
         ('Costos', {'fields': [('costo_produccion', 'costo_financiero', 'costo_transporte', 'costo_postproceso')]})
     ]
     inlines = [ProductoVariedadInline, ImagenProductoInline]
-
+    ordering = ['productor', 'pk']
 
 @admin.register(ProductoVariedad)
 class ProductoVariedadAdmin(admin.ModelAdmin):
-    list_display = ('get_productor', 'producto', '__str__', 'en_proximo_ciclo')
+    list_display = ('id', 'get_productor', 'producto', '__str__', 'en_proximo_ciclo')
     list_display_links = None
     list_filter = (
         ('producto__productor', admin.RelatedOnlyFieldListFilter),
     )
     search_fields = ('productor__nombre_fantasia', 'producto', 'descripcion',)
+    ordering = ('producto__productor', 'id')
+    actions = ['agregar_a_ciclo', 'quitar_de_ciclo']
 
     def get_productor(self, obj):
         return obj.producto.productor
@@ -86,18 +96,14 @@ class ProductoVariedadAdmin(admin.ModelAdmin):
     get_productor.admin_order_field = 'Productor'  # Allows column order sorting
     get_productor.short_description = 'Productor'  # Renames column head
 
-    actions = ['agregar_a_ciclo', 'quitar_de_ciclo']
-
     def agregar_a_ciclo(self, request, queryset):
         ciclo = Ciclo.objects.latest("inicio")
         productos = Producto.objects.filter(productovariedad__in=queryset).distinct()
         for producto in productos:
             producto_ciclo, creado = ProductoCiclo.objects.get_or_create(producto=producto, ciclo=ciclo)
-
         for variedad in queryset:
             producto_variedad_ciclo, creado = ProductoVariedadCiclo.objects.get_or_create(producto_variedad=variedad,
                                                                                           ciclo=ciclo)
-
     agregar_a_ciclo.short_description = "Agregar al próximo ciclo"
 
     def quitar_de_ciclo(self, request, queryset):
@@ -109,7 +115,6 @@ class ProductoVariedadAdmin(admin.ModelAdmin):
         for producto in productos:
             if not ProductoVariedadCiclo.objects.filter(producto_variedad__producto=producto, ciclo=ciclo).exists():
                 ProductoCiclo.objects.filter(producto=producto, ciclo=ciclo).delete()
-
     quitar_de_ciclo.short_description = "Quitar del próximo ciclo"
 
 class MembresiaInline(admin.TabularInline):
@@ -155,4 +160,36 @@ class ProductoCicloAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super(ProductoCicloAdmin, self).get_queryset(request)
-        return qs.filter(ciclo=Ciclo.objects.latest("inicio"))
+        ciclos = Ciclo.objects.all()
+        if ciclos:
+            return qs.filter(ciclo=ciclos.latest("inicio"))
+        else:
+            return qs
+
+
+class ItemPedidoInline(admin.TabularInline):
+    model = ItemPedido
+    extra = 5
+    min_num = 1
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "producto_variedad_ciclo":
+            kwargs["queryset"] = ProductoVariedadCiclo.objects.filter(ciclo=Ciclo.objects.latest("inicio")).order_by(
+                'producto_variedad__producto__productor', 'producto_variedad__pk')
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+@admin.register(Pedido)
+class PedidoAdmin(admin.ModelAdmin):
+    list_display = ('consumidor',)
+
+    def get_queryset(self, request):
+        qs = super(PedidoAdmin, self).get_queryset(request)
+        ciclos = Ciclo.objects.all()
+        if ciclos:
+            ciclo = ciclos.latest("inicio")
+            return qs.filter(timestamp__range=(ciclo.inicio, ciclo.cierre))
+        else:
+            return qs
+
+    inlines = [ItemPedidoInline]

@@ -94,6 +94,9 @@ class Membresia(models.Model):
     contacto = models.ForeignKey(Contacto, models.CASCADE, related_name='membresias')
     nodo = models.ForeignKey(Nodo, models.CASCADE)
 
+    def __str__(self):
+        return "{}, {} (Nodo {}, {})".format(self.contacto.apellido, self.contacto.nombre, self.nodo,
+                                             self.get_rol_display())
 
 class Producto(models.Model):
     UNIDADES = (
@@ -106,7 +109,7 @@ class Producto(models.Model):
         ("m", 'metros')
     )
     productor = models.ForeignKey(Contacto, models.CASCADE, related_name='productos')
-    titulo = models.CharField(max_length=200, unique=True)
+    titulo = models.CharField(max_length=200, unique=False)
     descripcion = models.TextField(blank=True)
     envase = models.CharField(max_length=200, blank=True)
     cantidad = models.IntegerField()  # Ver de agregar MinValueValidator
@@ -124,11 +127,14 @@ class Producto(models.Model):
 
     get_descripcion_corta.short_description = 'Detalle'
 
+    @property
+    def presentacion(self):
+        return "{} {} {}".format(self.envase, self.cantidad, self.unidad)
 
 class ProductoVariedad(models.Model):
     producto = models.ForeignKey(Producto, models.CASCADE)
-    descripcion = models.CharField(max_length=200)
-    disponible = models.IntegerField()  # Ver de agregar MinValueValidator
+    descripcion = models.CharField(max_length=200, default="UNICA")
+    disponible = models.IntegerField(blank=True, null=True, default='')  # Ver de agregar MinValueValidator
 
     def __str__(self):
         return self.descripcion
@@ -188,6 +194,8 @@ class ProductoCiclo(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['ciclo', 'producto'], name='unico producto por ciclo')
         ]
+        verbose_name = "Producto en ciclo"
+        verbose_name_plural = "Productos en ciclo"
 
     def save(self, *args, **kwargs):
         if not self.precio:
@@ -198,11 +206,23 @@ class ProductoCiclo(models.Model):
             self.precio = self.precio_sugerido()
         super(ProductoCiclo, self).save(*args, **kwargs)
 
+    def costos(self):
+        return self.costo_produccion + self.costo_transporte + self.costo_financiero + self.costo_postproceso
+
+    def aporte_deposito(self):
+        return self.costo_produccion * Decimal(self.ciclo.aporte_deposito) / 100
+
+    def aporte_central(self):
+        return self.costo_produccion * Decimal(self.ciclo.aporte_central) / 100
+
+    def aporte_nodo(self):
+        return self.costo_produccion * Decimal(self.ciclo.aporte_nodo) / 100
+
+    def aporte_logistica(self):
+        return self.costo_produccion * Decimal(self.ciclo.aporte_logistica) / 100
+
     def precio_sugerido(self):
-        costos = self.costo_produccion + self.costo_transporte + self.costo_financiero + self.costo_postproceso
-        aportes = Decimal(
-            self.ciclo.aporte_deposito + self.ciclo.aporte_central + self.ciclo.aporte_nodo + self.ciclo.aporte_logistica)
-        return costos + costos * aportes / 100
+        return self.costos() + self.aporte_deposito() + self.aporte_central() + self.aporte_nodo() + self.aporte_logistica()
 
     def __str__(self):
         return "{} - {}".format(self.producto.productor, self.producto.titulo)
@@ -211,7 +231,7 @@ class ProductoCiclo(models.Model):
 class ProductoVariedadCiclo(models.Model):
     ciclo = models.ForeignKey(Ciclo, models.CASCADE)
     producto_variedad = models.ForeignKey(ProductoVariedad, models.CASCADE)
-    disponible = models.IntegerField()  # Ver de agregar MinValueValidator
+    disponible = models.IntegerField(blank=True, null=True)  # Ver de agregar MinValueValidator
 
     def save(self, *args, **kwargs):
         self.disponible = self.producto_variedad.disponible
@@ -227,8 +247,9 @@ class ProductoVariedadCiclo(models.Model):
                                                  self.producto_variedad,
                                                  self.producto_ciclo().precio)
 
+
 class Pedido(models.Model):
-    timestamp = models.DateTimeField('fecha y hora', editable=False, default=datetime.datetime.now())
+    timestamp = models.DateTimeField('fecha y hora', editable=False, default=datetime.datetime.now)
     consumidor = models.ForeignKey(Membresia, models.CASCADE)
 
     def __str__(self):
@@ -237,4 +258,9 @@ class Pedido(models.Model):
 class ItemPedido(models.Model):
     pedido = models.ForeignKey(Pedido, models.CASCADE)
     producto_variedad_ciclo = models.ForeignKey(ProductoVariedadCiclo, models.CASCADE)
-    cantidad = models.IntegerField
+    cantidad = models.IntegerField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['pedido', 'producto_variedad_ciclo'], name='unico producto por pedido')
+        ]

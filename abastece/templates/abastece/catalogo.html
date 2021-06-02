@@ -1,0 +1,38 @@
+{% extends "abastece/base.html" %}
+{% block title %}Catálogo{% endblock %}
+{% block content %}
+<main role="main">
+
+    {% if variedades_en_ciclo %}
+    <h1>Catálogo de productos</h1>
+    <br>
+    <a href="/catalogo_pdf">Descargar</a>
+    <table class="table">
+        <thead class="thead-dark">
+        <tr>
+            <th>Código</th>
+            <th>Productor</th>
+            <th>Producto</th>
+            <th>Detalles</th>
+            <th>Variedad</th>
+            <th>Presentación</th>
+            <th>Precio</th>
+        </tr>
+        </thead>
+        {% for variedad in variedades_en_ciclo %}
+        <tr>
+            <td>{{ variedad.producto_variedad.pk }}</td>
+            <td>{{ variedad.producto_variedad.producto.productor }}</td>
+            <td>{{ variedad.producto_variedad.producto.titulo }}</td>
+            <td>{{ variedad.producto_variedad.producto.descripcion }}</td>
+            <td>{{ variedad.producto_variedad.descripcion }}</td>
+            <td>{{ variedad.producto_variedad.producto.presentacion }}</td>
+            <td>{{ variedad.producto_ciclo.precio }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No hay variedades en el ciclo.</p>
+    {% endif %}
+</main>
+{% endblock %}

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Atizar abastece{% endblock %}</title>
+    {% load bootstrap4 %}
+    {% bootstrap_css %}
+    {% load static %}
+    <link href="{% static 'abastece/style.css' %}" rel="stylesheet" type="text/css">
+    {% block styles %}{% endblock %}
+
+
+</head>
+<body>
+{% block header %}
+<nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+    <a class="navbar-brand" href="/">Atizar Abastece</a>
+    <button aria-controls="navbarsExample03" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler"
+            data-target="#navbarsExample03" data-toggle="collapse" type="button">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarsExample03">
+        <ul class="navbar-nav mr-auto">
+            {% if request.user.is_authenticated %}
+            <li class="nav-item">
+                <a class="nav-link" href="/catalogo_interno">Catálogo Interno</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/remitos_nodos">Remitos Nodos</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/remitos_productores">Remitos Productores</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/resumen_post_proceso">Resumen Post-proceso</a>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
+{% endblock %}
+<div class="container">
+
+    {% block content %}{% endblock %}
+</div>
+{% bootstrap_javascript jquery='full' %}
+</body>
+</html>

@@ -1,0 +1,14 @@
+body {
+  background-color: #ffcb50;
+}
+
+table {
+  background-color: #ffea77;
+}
+
+table, th {
+  border: 1px solid gray;
+}
+div.header{
+  background-color: #00ff00;
+}
