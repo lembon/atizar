@@ -1,0 +1,67 @@
+{% extends "abastece/base.html" %}
+{% block title %}Remitos Productores{% endblock %}
+{% block styles %}
+<style>
+        @page {
+            size: "A4";
+            margin: 1.0cm 1.5cm 3.5cm 1.5cm;
+        }
+        body {
+            width: 100% !important;
+            height: 100%;
+            color: black;
+            font-size: 100%;
+            font-family: 'Helvetica', sans-serif;
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+            -webkit-text-size-adjust: none;
+        }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<main role="main">
+    <h1 class="text-center">Atizar Abastece - Remitos a Productores</h1>
+    <br>
+    {% if remitos %}
+    {% for remito in remitos %}
+    {% if remito.items %}
+    <h3>Productor: {{ remito.productor }}</h3>
+    <table class="table">
+        <thead class="thead-dark">
+        <tr>
+            <th>Cód.</th>
+            <th>Producto</th>
+            <th>Variedad</th>
+            <th>Presentación</th>
+            <th>Costo</th>
+            <th>Cantidad</th>
+            <th>Importe</th>
+        </tr>
+        </thead>
+        {% for item in remito.items %}
+        <tr>
+            <td>{{ item.producto_variedad.id }}</td>
+            <td>{{ item.producto_variedad.producto }}</td>
+            <td>{{ item.producto_variedad }}</td>
+            <td>{{ item.producto_variedad.producto.presentacion }}</td>
+            <td>{{ item.producto_variedad.producto.costo_produccion }}</td>
+            <td>{{ item.cantidad__sum }}</td>
+            <td>{{ item.importe }}</td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="6"></td>
+            <td>{{ remito.importe_total }}</td>
+        </tr>
+    </table>
+    <br>
+    {% endif %}
+    {% endfor %}
+
+    {% else %}
+    <p>No hay remitos.</p>
+    {% endif %}
+</main>
+{% endblock %}

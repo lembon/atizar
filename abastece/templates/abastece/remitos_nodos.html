@@ -1,0 +1,77 @@
+{% extends "abastece/base.html" %}
+{% block title %}Remito Nodo{% endblock %}
+{% block styles %}
+<style>
+        @page {
+            size: "A4";
+            margin: 1.0cm 1.5cm 3.5cm 1.5cm;
+        }
+        body {
+            width: 100% !important;
+            height: 100%;
+            color: black;
+            font-size: 100%;
+            font-family: 'Helvetica', sans-serif;
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+            -webkit-text-size-adjust: none;
+        }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<main role="main">
+    <h1 class="text-center">Atizar Abastece - Remitos a Nodos</h1>
+    <br>
+    {% if remitos %}
+    {% for remito in remitos %}
+    <h3>Nodo {{ remito.nodo }}</h3>
+    {% if remito.items %}
+    <table class="table">
+        <thead class="thead-dark">
+        <tr>
+            <th>Cód.</th>
+            <th>Productor</th>
+            <th>Producto</th>
+            <th>Variedad</th>
+            <th>Presentación</th>
+            <th>Precio</th>
+            <th>Cantidad</th>
+            <th>Total</th>
+            <th>Al Nodo</th>
+        </tr>
+        </thead>
+        {% for item in remito.items %}
+        <tr>
+            <td>{{ item.producto_variedad_ciclo__producto_variedad }}</td>
+            <td>{{ item.producto_ciclo.producto.productor }}</td>
+            <td>{{ item.producto_ciclo.producto }}</td>
+            <td>{{ item.producto_variedad_ciclo__producto_variedad__descripcion }}</td>
+            <td>{{ item.producto_ciclo.producto.presentacion }}</td>
+            <td>{{ item.producto_ciclo.precio }}</td>
+            <td>{{ item.cantidad__sum }}</td>
+            <td>{{ item.importe }}</td>
+            <td>{{ item.importe_nodo }}</td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="7"></td>
+            <td>{{ remito.importe_total }}</td>
+            <td>{{ remito.importe_para_nodo }}</td>
+        </tr>
+        <tr>
+            <td colspan="8" style="text-align:right">Para Atizar Central:</td>
+            <td>{{ remito.importe_para_central }}</td>
+        </tr>
+    </table>
+    {% else %}
+    <p>Sin pedidos</p>
+    {% endif %}
+    <br>
+    {% endfor %}
+    {% else %}
+    <p>No hay remitos.</p>
+    {% endif %}
+</main>
+{% endblock %}

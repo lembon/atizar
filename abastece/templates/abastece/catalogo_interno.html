@@ -1,0 +1,42 @@
+{% extends "abastece/base.html" %}
+{% block title %}Catálogo interno{% endblock %}
+{% block content %}
+<main role="main">
+    {% if variedades_en_ciclo %}
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Código</th>
+            <th>Productor</th>
+            <th>Producto</th>
+            <th>Detalles</th>
+            <th>Variedad</th>
+            <th>Presentación</th>
+            <th>C. Prod.</th>
+            <th>C. Transp.</th>
+            <th>C. Fin.</th>
+            <th>C. Post.</th>
+            <th>Precio</th>
+        </tr>
+        </thead>
+        {% for variedad in variedades_en_ciclo %}
+        <tr>
+            <td>{{ variedad.producto_variedad.pk }}</td>
+            <td>{{ variedad.producto_variedad.producto.productor }}</td>
+            <td>{{ variedad.producto_variedad.producto.titulo }}</td>
+            <td>{{ variedad.producto_variedad.producto.descripcion }}</td>
+            <td>{{ variedad.producto_variedad.descripcion }}</td>
+            <td>{{ variedad.producto_variedad.producto.presentacion }}</td>
+            <td>{{ variedad.producto_variedad.producto.costo_produccion }}</td>
+            <td>{{ variedad.producto_variedad.producto.costo_transporte }}</td>
+            <td>{{ variedad.producto_variedad.producto.costo_financiero }}</td>
+            <td>{{ variedad.producto_variedad.producto.costo_postproceso }}</td>
+            <td>{{ variedad.producto_ciclo.precio }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No hay variedades en el ciclo.</p>
+    {% endif %}
+</main>
+{% endblock %}
