@@ -1,10 +1,11 @@
+from django.db.models import Count
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from weasyprint import HTML
 
 from abastece.logic import resumen
-from abastece.models import Ciclo, ProductoVariedadCiclo
+from abastece.models import Ciclo, ProductoVariedadCiclo, Contacto
 
 
 def catalogo_interno(request):
@@ -16,7 +17,8 @@ def catalogo_interno(request):
 
 def catalogo(request):
     ciclo = Ciclo.objects.latest("inicio")
-    variedades_en_ciclo = ProductoVariedadCiclo.objects.filter(ciclo=ciclo)
+    variedades_en_ciclo = ProductoVariedadCiclo.objects.filter(ciclo=ciclo).order_by(
+        'producto_variedad__producto__productor', 'producto_variedad__producto', 'producto_variedad__id')
     context = {'variedades_en_ciclo': variedades_en_ciclo, }
     return render(request, 'abastece/catalogo.html', context)
 
@@ -64,3 +66,10 @@ def resumen_post_proceso(request):
     html = HTML(string=html_string)
     html.write_pdf(response, )
     return response
+
+
+def productores(request):
+    productores = Contacto.objects.annotate(num_productos=Count('productos')).filter(num_productos__gt=0).order_by(
+        'nombre_fantasia')
+    context = {'productores': productores, }
+    return render(request, 'abastece/productores.html', context)
