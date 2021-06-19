@@ -28,6 +28,9 @@
     {% for remito in remitos %}
     {% if remito.items %}
     <h3>Productor: {{ remito.productor }}</h3>
+    <p>Referente: {{ remito.productor.nombre }} {{ remito.productor.apellido }} - Tel: {{ remito.productor.telefono }} -
+        Mail: {{ remito.productor.email }}
+        <br>Domicilio: {{ remito.productor.domicilio }}</p>
     <table class="table">
         <thead class="thead-dark">
         <tr>

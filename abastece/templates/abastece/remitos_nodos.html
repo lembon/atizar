@@ -27,6 +27,9 @@
     {% if remitos %}
     {% for remito in remitos %}
     <h3>Nodo {{ remito.nodo }}</h3>
+    <p>Referente: {{ remito.nodo.get_referente_nombre }} - Tel: {{ remito.nodo.get_referente.telefono }} - Mail: {{
+        remito.nodo.get_referente.email }}
+        <br>Domicilio: {{ remito.nodo.get_referente.domicilio }}</p>
     {% if remito.items %}
     <table class="table">
         <thead class="thead-dark">
