@@ -1,0 +1,34 @@
+{% extends "abastece/base.html" %}
+{% block title %}Lista de Productores{% endblock %}
+{% block content %}
+<main role="main">
+    <h1>Productores Asociados</h1>
+    <br>
+    {% if productores %}
+    <table class="table">
+        <thead class="thead-dark">
+        <tr>
+            <th>Proyecto</th>
+            <th>Descripción</th>
+            <th>Contacto</th>
+            <th>Web</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for productor in productores %}
+        <tr>
+            <td>{{ productor }}</td>
+            <td>{{ productor.descripcion }}</td>
+            <td>{{ productor.telefono }}</td>
+            <td>{{ productor.web }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <br>
+
+    {% else %}
+    <p>No hay productores.</p>
+    {% endif %}
+</main>
+{% endblock %}

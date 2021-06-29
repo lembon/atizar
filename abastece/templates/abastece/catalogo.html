@@ -23,21 +23,22 @@
         <tbody>
         {% regroup variedades by producto_variedad.producto as variedades_x_producto %}
         {% for producto, variedades in variedades_x_producto %}
+        {% cycle 'prod1' 'prod2' as prod_color silent%}
         {% for variedad in variedades %}
-        <tr>
+        <tr class="{{ prod_color }}">
             <td>{{ variedad.producto_variedad.pk }}</td>
             {% ifchanged %}
             <td rowspan="{{ variedades|length }}">{{ variedad.producto_variedad.producto.titulo }}</td>
             {% endifchanged %}
             {% ifchanged %}
             <td if rowspan="{{ variedades|length }}" variedad.producto_variedad.descripcion== {%
-            "UNICA" %} colspan="2" {% endif %}> {{ variedad.producto_variedad.producto.descripcion }}</td>{%
-            endifchanged %}
+            "UNICA" %} colspan="2" {% endif %}> {{ variedad.producto_variedad.producto.descripcion }}
+            </td>{% endifchanged %}
             {% if variedad.producto_variedad.descripcion != "UNICA" %}
             <td>{{ variedad.producto_variedad.descripcion }}</td>
             {% endif %}
             {% ifchanged %}
-            <td rowspan="{{ variedades|length }}">{{ variedad.producto_variedad.producto.presentacion }}</td>
+            <td nowrap rowspan="{{ variedades|length }}">{{ variedad.producto_variedad.producto.presentacion }}</td>
             {% endifchanged %}
             {% ifchanged %}
             <td rowspan="{{ variedades|length }}">{{ variedad.producto_ciclo.precio }}</td>

@@ -53,7 +53,7 @@ WSGI_APPLICATION = 'atizar.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'atizar2',
+        'NAME': 'atizar',
         'USER': 'atizar',
         'PASSWORD': 'atizar',
         'HOST': ''
