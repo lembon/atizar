@@ -2,16 +2,17 @@
 {% block title %}Catálogo{% endblock %}
 {% block content %}
 <main role="main">
-
-    {% if variedades_en_ciclo %}
     <h1>Catálogo de productos</h1>
     <br>
+    {% if variedades_en_ciclo %}
     <a href="/catalogo_pdf">Descargar</a>
+    {% regroup variedades_en_ciclo by producto_variedad.producto.productor as variedades_x_productores %}
+    {% for productor, variedades in variedades_x_productores %}
+    <h3>{{ productor }}</h3>
     <table class="table">
         <thead class="thead-dark">
         <tr>
             <th>Código</th>
-            <th>Productor</th>
             <th>Producto</th>
             <th>Detalles</th>
             <th>Variedad</th>
@@ -19,18 +20,38 @@
             <th>Precio</th>
         </tr>
         </thead>
-        {% for variedad in variedades_en_ciclo %}
-        <tr>
+        <tbody>
+        {% regroup variedades by producto_variedad.producto as variedades_x_producto %}
+        {% for producto, variedades in variedades_x_producto %}
+        {% cycle 'prod1' 'prod2' as prod_color silent%}
+        {% for variedad in variedades %}
+        <tr class="{{ prod_color }}">
             <td>{{ variedad.producto_variedad.pk }}</td>
-            <td>{{ variedad.producto_variedad.producto.productor }}</td>
-            <td>{{ variedad.producto_variedad.producto.titulo }}</td>
-            <td>{{ variedad.producto_variedad.producto.descripcion }}</td>
+            {% ifchanged %}
+            <td rowspan="{{ variedades|length }}">{{ variedad.producto_variedad.producto.titulo }}</td>
+            {% endifchanged %}
+            {% ifchanged %}
+            <td if rowspan="{{ variedades|length }}" variedad.producto_variedad.descripcion== {%
+            "UNICA" %} colspan="2" {% endif %}> {{ variedad.producto_variedad.producto.descripcion }}
+            </td>{% endifchanged %}
+            {% if variedad.producto_variedad.descripcion != "UNICA" %}
             <td>{{ variedad.producto_variedad.descripcion }}</td>
-            <td>{{ variedad.producto_variedad.producto.presentacion }}</td>
-            <td>{{ variedad.producto_ciclo.precio }}</td>
+            {% endif %}
+            {% ifchanged %}
+            <td nowrap rowspan="{{ variedades|length }}">{{ variedad.producto_variedad.producto.presentacion }}</td>
+            {% endifchanged %}
+            {% ifchanged %}
+            <td rowspan="{{ variedades|length }}">{{ variedad.producto_ciclo.precio }}</td>
+            {% endifchanged %}
         </tr>
         {% endfor %}
+
+        {% endfor %}
+        </tbody>
     </table>
+    <br>
+    {% endfor %}
+
     {% else %}
     <p>No hay variedades en el ciclo.</p>
     {% endif %}

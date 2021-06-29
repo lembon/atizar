@@ -23,6 +23,9 @@
         <ul class="navbar-nav mr-auto">
             {% if request.user.is_authenticated %}
             <li class="nav-item">
+                <a class="nav-link" href="/admin">Administración</a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" href="/catalogo_interno">Catálogo Interno</a>
             </li>
             <li class="nav-item">
