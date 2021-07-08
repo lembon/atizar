@@ -12,6 +12,7 @@ urlpatterns = [
     path('productores', views.productores, name='Productores'),
     path('remitos_nodos', views.remitos_nodos, name='Remitos Nodos'),
     path('remitos_productores', views.remitos_productores, name='Remitos Productores'),
+    path('resumen_pedidos', views.resumen_pedidos, name='Resumen Pedidos'),
     path('resumen_post_proceso', views.resumen_post_proceso, name='Resumen Postproceso'),
 
 ]

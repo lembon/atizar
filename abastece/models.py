@@ -237,6 +237,7 @@ class ProductoVariedadCiclo(models.Model):
         self.disponible = self.producto_variedad.disponible
         super(ProductoVariedadCiclo, self).save(*args, **kwargs)
 
+    @property
     def producto_ciclo(self):
         return ProductoCiclo.objects.get(ciclo=self.ciclo, producto=self.producto_variedad.producto)
 
