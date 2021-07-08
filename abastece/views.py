@@ -1,3 +1,6 @@
+import csv
+
+from django.http.response import HttpResponse
 from django.db.models import Count
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -7,6 +10,17 @@ from weasyprint import HTML
 from abastece.logic import resumen
 from abastece.models import Ciclo, ProductoVariedadCiclo, Contacto
 
+TOTALES_RESUMEN = {'Costo Produccion': '=SUMA.PRODUCTO($F2:$F{filas};G2:G{filas})',
+                   'Costo Transporte': '=SUMA.PRODUCTO($F2:$F{filas};H2:H{filas})',
+                   'Costo Financiero': '=SUMA.PRODUCTO($F2:$F{filas};I2:I{filas})',
+                   'Costo Postproceso': '=SUMA.PRODUCTO($F2:$F{filas};J2:J{filas})',
+                   'A Nodos': '=SUMA.PRODUCTO($F2:$F{filas};K2:K{filas})',
+                   'Logistica': '=SUMA.PRODUCTO($F2:$F{filas};L2:L{filas})',
+                   'A la red': '=SUMA.PRODUCTO($F2:$F{filas};M2:M{filas})',
+                   'A depositos': '=SUMA.PRODUCTO($F2:$F{filas};N2:N{filas})',
+                   'Precio final': '=SUMA.PRODUCTO($F2:$F{filas};O2:O{filas})',
+                   'Importe Total': '=SUMA(P2:P{filas})',
+                   }
 
 def catalogo_interno(request):
     ciclo = Ciclo.objects.latest("inicio")
@@ -40,7 +54,7 @@ def remitos_nodos(request):
     context = {'remitos': resumen.remitos_nodos(ciclo)}
     html_string = render_to_string('abastece/remitos_nodos.html', context)
     response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = "inline; report.pdf"
+    response["Content-Disposition"] = "inline; remitos_nodos.pdf"
     html = HTML(string=html_string)
     html.write_pdf(response, )
     return response
@@ -51,7 +65,7 @@ def remitos_productores(request):
     context = {'remitos': resumen.remitos_productores(ciclo)}
     html_string = render_to_string('abastece/remitos_productores.html', context)
     response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = "inline; report.pdf"
+    response["Content-Disposition"] = "inline; remitos_productores.pdf"
     html = HTML(string=html_string)
     html.write_pdf(response, )
     return response
@@ -62,9 +76,22 @@ def resumen_post_proceso(request):
     context = {'resumen': resumen.resumen_post_proceso(ciclo)}
     html_string = render_to_string('abastece/resumen_post_proceso.html', context)
     response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = "inline; report.pdf"
+    response["Content-Disposition"] = "inline; resumen_post_proceso.pdf"
     html = HTML(string=html_string)
     html.write_pdf(response, )
+    return response
+
+
+def resumen_pedidos(request):
+    ciclo = Ciclo.objects.latest("inicio")
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="resumen_pedidos.csv"'
+    items_agrupados = resumen.resumen_pedidos(ciclo)
+    writer = csv.DictWriter(response, fieldnames=items_agrupados[0].keys())
+    writer.writeheader()
+    writer.writerows(items_agrupados)
+    actual_total_lines = {k: v.format(filas=len(items_agrupados) + 1) for k, v in TOTALES_RESUMEN.items()}
+    writer.writerow(actual_total_lines)
     return response
 
 
