@@ -1,6 +1,5 @@
 import csv
 
-from django.http.response import HttpResponse
 from django.db.models import Count
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -10,17 +9,6 @@ from weasyprint import HTML
 from abastece.logic import resumen
 from abastece.models import Ciclo, ProductoVariedadCiclo, Contacto
 
-TOTALES_RESUMEN = {'Costo Produccion': '=SUMA.PRODUCTO($F2:$F{filas};G2:G{filas})',
-                   'Costo Transporte': '=SUMA.PRODUCTO($F2:$F{filas};H2:H{filas})',
-                   'Costo Financiero': '=SUMA.PRODUCTO($F2:$F{filas};I2:I{filas})',
-                   'Costo Postproceso': '=SUMA.PRODUCTO($F2:$F{filas};J2:J{filas})',
-                   'A Nodos': '=SUMA.PRODUCTO($F2:$F{filas};K2:K{filas})',
-                   'Logistica': '=SUMA.PRODUCTO($F2:$F{filas};L2:L{filas})',
-                   'A la red': '=SUMA.PRODUCTO($F2:$F{filas};M2:M{filas})',
-                   'A depositos': '=SUMA.PRODUCTO($F2:$F{filas};N2:N{filas})',
-                   'Precio final': '=SUMA.PRODUCTO($F2:$F{filas};O2:O{filas})',
-                   'Importe Total': '=SUMA(P2:P{filas})',
-                   }
 
 def catalogo_interno(request):
     ciclo = Ciclo.objects.latest("inicio")
@@ -90,7 +78,7 @@ def resumen_pedidos(request):
     writer = csv.DictWriter(response, fieldnames=items_agrupados[0].keys())
     writer.writeheader()
     writer.writerows(items_agrupados)
-    actual_total_lines = {k: v.format(filas=len(items_agrupados) + 1) for k, v in TOTALES_RESUMEN.items()}
+    actual_total_lines = {k: v.format(filas=len(items_agrupados) + 1) for k, v in resumen.TOTALES_RESUMEN.items()}
     writer.writerow(actual_total_lines)
     return response
 
