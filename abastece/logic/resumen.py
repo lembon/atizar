@@ -4,6 +4,17 @@ from django.db.models import Sum
 
 from abastece.models import Nodo, Pedido, ItemPedido, ProductoCiclo, ProductoVariedad, ProductoVariedadCiclo, Contacto
 
+TOTALES_RESUMEN = {'Costo Produccion': '=SUMA.PRODUCTO($E2:$E{filas};F2:F{filas})',
+                   'Costo Transporte': '=SUMA.PRODUCTO($E2:$E{filas};G2:G{filas})',
+                   'Costo Financiero': '=SUMA.PRODUCTO($E2:$E{filas};H2:H{filas})',
+                   'Costo Postproceso': '=SUMA.PRODUCTO($E2:$E{filas};I2:I{filas})',
+                   'A Nodos': '=SUMA.PRODUCTO($E2:$E{filas};J2:J{filas})',
+                   'Logistica': '=SUMA.PRODUCTO($E2:$E{filas};K2:K{filas})',
+                   'A la red': '=SUMA.PRODUCTO($E2:$E{filas};L2:L{filas})',
+                   'A depositos': '=SUMA.PRODUCTO($E2:$E{filas};M2:M{filas})',
+                   'Precio final': '=SUMA.PRODUCTO($E2:$E{filas};N2:N{filas})',
+                   'Importe Total': '=SUMA(O2:O{filas})',
+                   }
 
 def remitos_nodos(ciclo):
     return [remito_nodo(ciclo, nodo) for nodo in Nodo.objects.all()]
