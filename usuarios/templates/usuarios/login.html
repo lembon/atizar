@@ -1,0 +1,38 @@
+{% extends "abastece/base.html" %}
+
+{% block content %}
+
+<br>
+{% if form.errors %}
+<p>Su usuario o su contraseña son incorrectos.</p>
+{% endif %}
+
+{% if next %}
+{% if user.is_authenticated %}
+<p>Su usuario no es válido para acceder a esta página. Para ingresar inicie sesión con un usuario con los permisos
+    necesarios.</p>
+{% else %}
+<p>Por favor inicie sesión para ver esta página.</p>
+{% endif %}
+{% endif %}
+
+<form action="{% url 'login' %}" method="post">
+    {% csrf_token %}
+    <table>
+        <tr>
+            <td>{{ form.username.label_tag }}</td>
+            <td>{{ form.username }}</td>
+        </tr>
+        <tr>
+            <td>{{ form.password.label_tag }}</td>
+            <td>{{ form.password }}</td>
+        </tr>
+    </table>
+
+    <input type="submit" value="login">
+    <input name="next" type="hidden" value="{{ next }}">
+</form>
+
+<p><a href="{% url 'password_reset' %}">¿Olvidó su contraseña?</a></p>
+
+{% endblock %}
