@@ -39,7 +39,7 @@ class ContactoAdmin(admin.ModelAdmin):
     list_filter = (IsProductorListFilter, 'domicilio__provincia')
     search_fields = ['apellido', 'descripcion', 'nombre', 'nombre_fantasia', 'productos__titulo']
     fieldsets = [
-        (None, {'fields': ['nombre', 'apellido', 'nombre_fantasia', 'descripcion', 'web']}),
+        (None, {'fields': ['usuario', 'nombre', 'apellido', 'nombre_fantasia', 'descripcion', 'web']}),
         ('Datos de Contacto', {'fields': ['telefono', 'domicilio', 'email'], }),
     ]
     inlines = [ImagenContactoInline]
