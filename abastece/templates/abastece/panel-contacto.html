@@ -1,0 +1,20 @@
+{% extends "abastece/base.html" %}
+{% block title %}Red Atizar Abastece - Panel{% endblock %}
+{% block content %}
+<main role="main">
+    <br>
+    <h2>Bienvenido a tu panel de control en la Red Atizar Abastece.</h2>
+    <br>
+    {% if not request.user.contacto %}
+    <h3>Tu cuenta no está vinculada a un contacto. Por favor pedí a la coordinación que generen una vinculación.</h3>
+    {% else %}
+    <h3>{{ request.user.contacto }}</h3>
+    {% if request.user.contacto.is_productor %}
+    {% for producto in request.user.contacto.productos.all %}
+    <p>{{ producto }}</p>
+    {% endfor %}
+    {% endif %}
+    <br>
+    {% endif %}
+</main>
+{% endblock %}

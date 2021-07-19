@@ -4,6 +4,7 @@ from django.db.models import Count
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
+from django.contrib.auth.decorators import login_required
 from weasyprint import HTML
 
 from abastece.logic import resumen
@@ -88,3 +89,8 @@ def productores(request):
         'nombre_fantasia')
     context = {'productores': productores, }
     return render(request, 'abastece/productores.html', context)
+
+
+@login_required
+def panel_contacto(request):
+    return render(request, 'abastece/panel-contacto.html', )

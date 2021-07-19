@@ -13,4 +13,5 @@ urlpatterns = [
     path('remitos_productores', views.remitos_productores, name='Remitos Productores'),
     path('resumen_pedidos', views.resumen_pedidos, name='Resumen Pedidos'),
     path('resumen_post_proceso', views.resumen_post_proceso, name='Resumen Postproceso'),
+    path('panel', views.panel_contacto, name='Panel'),
 ]
