@@ -76,6 +76,10 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = '/usuarios/login/'
+LOGOUT_URL = '/usuarios/logout/'
 AUTH_USER_MODEL = 'usuarios.User'
 LANGUAGE_CODE = 'es-ar'
 TIME_ZONE = 'America/Argentina/Catamarca'
