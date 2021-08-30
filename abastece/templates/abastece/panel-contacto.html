@@ -16,5 +16,12 @@
     {% endif %}
     <br>
     {% endif %}
+
+    {% if request.user.contacto.get_nodos_referente %}
+    <p>Sos referente de:</p>
+    {% for nodo in request.user.contacto.get_nodos_referente %}
+    <p>{{ nodo }}</p>
+    {% endfor %}
+    {% endif %}
 </main>
 {% endblock %}

@@ -9,10 +9,15 @@ table {
 table, th {
   border: 1px solid gray;
 }
-div.header{
+
+div.header {
   background-color: #00ff00;
 }
 
-tr.prod1{
+tr.prod1 {
   background-color: #fffc77;
+}
+
+tbody.bordes, tr {
+  border: 1px solid darkorange;
 }

@@ -1,0 +1,61 @@
+{% extends "abastece/base.html" %}
+{% block title %}Planilla de PEDIDOS{% endblock %}
+{% block content %}
+<main role="main">
+    <h1>Planilla de PEDIDOS</h1>
+    <br>
+    {% if filas %}
+    <a href="/planilla_pedidos_pdf">Descargar</a>
+    <table class="table">
+        <thead class="thead-dark">
+        <tr>
+            <th>Cod.</th>
+            <th>Producto</th>
+            <th>Precio Final</th>
+            {% for pedido in encabezado %}
+            <th><a href="{% url 'pedido-modificar' pedido.id %}">{{ pedido.nombre }}</a>
+                <a href="{% url 'pedido-eliminar' pedido.id %}"> [X]</a></th>
+            {% endfor %}
+            <th>Total Unidades</th>
+            <th>Para el Nodo</th>
+            <th>Importe Total</th>
+        </tr>
+        </thead>
+        <tbody class="bordes">
+        {% for fila in filas %}
+        <tr>
+            <td>{{ fila.producto.producto_variedad.pk }}</td>
+            <td>{{ fila.producto.producto_variedad.producto }}
+                {% if fila.producto.producto_variedad.descripcion != "UNICA" %}
+                - {{ fila.producto.producto_variedad.descripcion }}
+                {% endif %}
+            </td>
+            <td>{{ fila.producto.producto_ciclo.precio }}</td>
+            {% for columna in fila.columnas %}
+            <td>{{ columna }}</td>
+            {% endfor %}
+
+            <td>{{ fila.cantidad_total }}</td>
+            <td>{{ fila.importe_nodo }}</td>
+            <td>{{ fila.importe_total }}</td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="3"></td>
+            {% for total in totales.columnas %}
+            <td>{{ total }}</td>
+            {% endfor %}
+            <td></td>
+            <td>{{ totales.importe_nodo }}</td>
+            <td>{{ totales.importe_total }}</td>
+        </tr>
+        </tbody>
+
+
+    </table>
+    {% else %}
+    <p>No hay pedidos.</p>
+    {% endif %}
+    <a href="crear">Agregar pedido</a>
+</main>
+{% endblock %}
