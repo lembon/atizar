@@ -4,7 +4,7 @@
 <main role="main">
     <h1>Productores Asociados</h1>
     <br>
-    {% if productores %}
+    {% if contacto_list %}
     <table class="table">
         <thead class="thead-dark">
         <tr>
@@ -15,7 +15,7 @@
         </tr>
         </thead>
         <tbody>
-        {% for productor in productores %}
+        {% for productor in contacto_list %}
         <tr>
             <td>{{ productor }}</td>
             <td>{{ productor.descripcion }}</td>

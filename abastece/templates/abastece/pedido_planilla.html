@@ -1,0 +1,70 @@
+{% extends "abastece/base.html" %}
+{% load static %}
+{% block title %}Planilla de PEDIDOS{% endblock %}
+{% block content %}
+
+<h1>Planilla de PEDIDOS</h1>
+<br>
+{% if filas %}
+
+<a class="btn btn-primary" href="{% url 'pedido-crear' %}">Agregar pedido</a>
+<table class="table">
+    <thead class="thead-dark">
+    <tr>
+        <th>Cod.</th>
+        <th>Producto</th>
+        <th>Precio<br>Final</th>
+        {% for pedido in encabezado %}
+        <th><a href="{% url 'pedido-modificar' pedido.id %}">{{ pedido.nombre }}</a><br>
+            <a class="btn btn-danger btn-sm" href="{% url 'pedido-eliminar' pedido.id %}"> <i class="bi-trash"></i></a>
+        </th>
+        {% endfor %}
+        <th>Total<br>Unidades</th>
+        <th>Para<br>Nodo</th>
+        <th>Importe<br>Total</th>
+    </tr>
+        </thead>
+        <tbody class="bordes">
+        {% for fila in filas %}
+        <tr>
+            <td>{{ fila.producto.producto_variedad.pk }}</td>
+            <td>{{ fila.producto.producto_variedad.producto }}
+                {{ fila.producto.producto_variedad.producto.cantidad }}
+                {{ fila.producto.producto_variedad.producto.unidad }}
+                {% if fila.producto.producto_variedad.descripcion != "UNICA" %}
+                - {{ fila.producto.producto_variedad.descripcion }}
+                {% endif %}
+            </td>
+            <td>{{ fila.producto.producto_ciclo.precio }}</td>
+            {% for columna in fila.columnas %}
+            <td class="num">{{ columna }}</td>
+            {% endfor %}
+
+            <td>{{ fila.cantidad_total }}</td>
+            <td>{{ fila.importe_nodo }}</td>
+            <td>{{ fila.importe_total }}</td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="3"></td>
+            {% for total in totales.columnas %}
+            <td>{{ total }}</td>
+            {% endfor %}
+            <td></td>
+            <td>{{ totales.importe_nodo }}</td>
+            <td>{{ totales.importe_total }}</td>
+        </tr>
+        <tr>
+            <td colspan="{{ totales.columnas|length|add:3 }}"></td>
+            <td colspan="2">Para la red Atizar:</td>
+            <td>{{ totales.importe_atizar }}</td>
+        </tr>
+        </tbody>
+
+
+    </table>
+    {% else %}
+    <p>No hay pedidos.</p>
+    {% endif %}
+<a class="btn btn-primary" href="{% url 'pedido-crear' %}">Agregar pedido</a>
+{% endblock %}

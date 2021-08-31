@@ -1,0 +1,10 @@
+{% extends "abastece/base.html" %}
+
+{% block content %}
+<h2>Pedidos</h2>
+<ul>
+    {% for pedido in pedido_list %}
+    <li>{{ pedido.consumidor }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

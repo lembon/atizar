@@ -3,9 +3,10 @@
 {% block content %}
 <main role="main">
     <h1>Catálogo de productos</h1>
-    <br>
     {% if variedades_en_ciclo %}
     <a href="/catalogo_pdf">Descargar</a>
+    <br>
+    <br>
     {% regroup variedades_en_ciclo by producto_variedad.producto.productor as variedades_x_productores %}
     {% for productor, variedades in variedades_x_productores %}
     <h3>{{ productor }}</h3>

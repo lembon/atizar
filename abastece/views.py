@@ -1,14 +1,19 @@
 import csv
 
+from django.db import transaction
 from django.db.models import Count
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from weasyprint import HTML
 
+from abastece.forms import ItemPedidoFormset
 from abastece.logic import resumen
-from abastece.models import Ciclo, ProductoVariedadCiclo, Contacto
+from abastece.models import Ciclo, ProductoVariedadCiclo, Contacto, Pedido, Nodo, ItemPedido, Membresia
 
 
 def catalogo_interno(request):
@@ -84,13 +89,121 @@ def resumen_pedidos(request):
     return response
 
 
-def productores(request):
-    productores = Contacto.objects.annotate(num_productos=Count('productos')).filter(num_productos__gt=0).order_by(
-        'nombre_fantasia')
-    context = {'productores': productores, }
-    return render(request, 'abastece/productores.html', context)
+class ProductoresLista(ListView):
+    template_name = 'abastece/productores_list.html'
+
+    def get_queryset(self):
+        return Contacto.objects.annotate(num_productos=Count('productos')) \
+            .filter(num_productos__gt=0).order_by('nombre_fantasia')
 
 
 @login_required
 def panel_contacto(request):
     return render(request, 'abastece/panel-contacto.html', )
+
+
+@login_required
+def pedidos_planilla(request):
+    ciclo = Ciclo.objects.latest("inicio")
+    nodo = request.user.contacto.get_nodos_referente()[0]
+    pedidos = Pedido.objects.filter(consumidor__nodo=nodo, timestamp__range=(ciclo.inicio, ciclo.cierre))
+    items = ItemPedido.objects.filter(pedido__in=pedidos)
+    productos_variedad_ciclos = ProductoVariedadCiclo.objects.filter(itempedido__in=items). \
+        distinct(). \
+        order_by('producto_variedad')
+    planilla = []
+    fila_encabezado = pedidos
+    fila_totales = {'columnas': []}
+    for producto_var_cic in productos_variedad_ciclos:
+        fila = {'producto': producto_var_cic,
+                'columnas': []}
+        for pedido in pedidos:
+            try:
+                fila['columnas'].append(items.get(pedido=pedido, producto_variedad_ciclo=producto_var_cic).cantidad)
+            except ItemPedido.DoesNotExist:
+                fila['columnas'].append(0)
+        fila['cantidad_total'] = sum(fila['columnas'])
+        fila['importe_nodo'] = fila['cantidad_total'] * producto_var_cic.producto_ciclo.aporte_nodo()
+        fila['importe_total'] = fila['cantidad_total'] * producto_var_cic.producto_ciclo.precio
+        planilla.append(fila)
+
+    fila_totales['columnas'].extend([pedido.importe for pedido in pedidos])
+    fila_totales['importe_nodo'] = sum([fila['importe_nodo'] for fila in planilla])
+    fila_totales['importe_total'] = sum([fila['importe_total'] for fila in planilla])
+    fila_totales['importe_atizar'] = fila_totales['importe_total'] - fila_totales['importe_nodo']
+
+    context = {'encabezado': fila_encabezado,
+               'filas': planilla,
+               'totales': fila_totales}
+
+    return render(request, 'abastece/pedido_planilla.html', context)
+
+
+class PedidosCrear(LoginRequiredMixin, CreateView):
+    model = Pedido
+    fields = ['nombre']
+    success_url = reverse_lazy('pedido-planilla')
+
+    def get_context_data(self, **kwargs):
+        ciclo = Ciclo.objects.latest("inicio")
+        data = super(PedidosCrear, self).get_context_data(**kwargs)
+        if self.request.POST:
+            data['items_pedido'] = ItemPedidoFormset(self.request.POST, form_kwargs={'ciclo': ciclo})
+        else:
+            data['items_pedido'] = ItemPedidoFormset(form_kwargs={'ciclo': ciclo})
+        return data
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        items_pedido = context['items_pedido']
+        with transaction.atomic():
+            self.object = form.save(commit=False)
+            self.object.consumidor = Membresia.objects.filter(contacto=self.request.user.contacto, rol=2).first()
+            self.object.save()
+
+            if items_pedido.is_valid():
+                items_pedido.instance = self.object
+                items_pedido.save()
+        return super(PedidosCrear, self).form_valid(form)
+
+
+class PedidosModificar(LoginRequiredMixin, UpdateView):
+    model = Pedido
+    fields = ['nombre']
+    success_url = reverse_lazy('pedido-planilla')
+
+    def get_context_data(self, **kwargs):
+        data = super(PedidosModificar, self).get_context_data(**kwargs)
+        if self.request.POST:
+            data['items_pedido'] = ItemPedidoFormset(self.request.POST, instance=self.object)
+        else:
+            data['items_pedido'] = ItemPedidoFormset(instance=self.object)
+        return data
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        items_pedido = context['items_pedido']
+        with transaction.atomic():
+            self.object = form.save()
+
+            if items_pedido.is_valid():
+                items_pedido.instance = self.object
+                items_pedido.save()
+        return super(PedidosModificar, self).form_valid(form)
+
+
+class PedidosEliminar(LoginRequiredMixin, DeleteView):
+    model = Pedido
+    template_name_suffix = '_confirmar_eliminar'
+    success_url = reverse_lazy('pedido-planilla')
+
+
+class NodosLista(ListView):
+    model = Nodo
+
+
+class PedidosLista(LoginRequiredMixin, ListView):
+    def get_queryset(self):
+        ciclo = Ciclo.objects.latest("inicio")
+        nodos = self.request.user.contacto.get_nodos_referente()
+        return Pedido.objects.filter(consumidor__nodo__in=nodos, timestamp__range=(ciclo.inicio, ciclo.cierre))

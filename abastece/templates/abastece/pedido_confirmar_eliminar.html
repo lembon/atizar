@@ -1,0 +1,9 @@
+{% extends "abastece/base.html" %}
+{% block title %}ELIMINAR PEDIDO{% endblock %}
+{% block content %}
+<main role="main">
+    <form method="post">{% csrf_token %}
+        <p>¿Confirma que desea eliminar el pedido de {{ object.nombre }}?</p>
+        <input type="submit" value="Confirmar">
+    </form>
+    {% endblock content %}}

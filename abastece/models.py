@@ -2,8 +2,11 @@ import datetime
 from decimal import Decimal
 
 from django.conf import settings
+from django.core.validators import MinValueValidator
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.html import mark_safe
+from django.utils import timezone
 
 
 def get_upload_path(instance, filename):
@@ -41,9 +44,15 @@ class Contacto(models.Model):
 
     def is_productor(self):
         return bool(self.productos.count())
+
     is_productor.boolean = True
     is_productor.short_description = '¿Es Productor?'
 
+    def get_nodos_referente(self):
+        return Nodo.objects.filter(membresia__in=self.membresias.filter(rol=2))
+
+    def get_nodos_miembro(self):
+        return Nodo.objects.filter(membresia__in=self.membresias.all())
 
 class ImagenContacto(models.Model):
     contacto = models.ForeignKey(Contacto, models.CASCADE)
@@ -113,7 +122,7 @@ class Producto(models.Model):
     titulo = models.CharField(max_length=200, unique=False)
     descripcion = models.TextField(blank=True)
     envase = models.CharField(max_length=200, blank=True)
-    cantidad = models.IntegerField()  # Ver de agregar MinValueValidator
+    cantidad = models.PositiveIntegerField()  # Ver de agregar MinValueValidator
     unidad = models.CharField(max_length=100, choices=UNIDADES)
     costo_produccion = models.DecimalField(max_digits=8, decimal_places=2)
     costo_transporte = models.DecimalField(max_digits=8, decimal_places=2, default=0)
@@ -247,22 +256,39 @@ class ProductoVariedadCiclo(models.Model):
                                                  self.producto_variedad.producto.productor,
                                                  self.producto_variedad.producto,
                                                  self.producto_variedad,
-                                                 self.producto_ciclo().precio)
-
+                                                 self.producto_ciclo.precio)
 
 class Pedido(models.Model):
-    timestamp = models.DateTimeField('fecha y hora', editable=False, default=datetime.datetime.now)
+    timestamp = models.DateTimeField('fecha y hora', editable=False, default=timezone.now)
     consumidor = models.ForeignKey(Membresia, models.CASCADE)
+    nombre = models.CharField(max_length=50)
 
     def __str__(self):
         return str(self.consumidor)
 
+    @property
+    def importe(self):
+        return sum([item.importe for item in self.itempedido_set.all()])
+
+    def clean(self):
+        ciclo = Ciclo.objects.latest("inicio")
+        if not ciclo.inicio < self.timestamp < ciclo.cierre:
+            raise ValidationError(u'No hay un ciclo en curso.')
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
 class ItemPedido(models.Model):
     pedido = models.ForeignKey(Pedido, models.CASCADE)
     producto_variedad_ciclo = models.ForeignKey(ProductoVariedadCiclo, models.CASCADE)
-    cantidad = models.IntegerField()
+    cantidad = models.PositiveIntegerField(validators=[MinValueValidator(1)])
 
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['pedido', 'producto_variedad_ciclo'], name='unico producto por pedido')
         ]
+
+    @property
+    def importe(self):
+        return self.producto_variedad_ciclo.producto_ciclo.precio * self.cantidad
