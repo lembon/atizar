@@ -89,11 +89,12 @@ def resumen_pedidos(request):
     return response
 
 
-def ProductoresLista(request):
-    productores = Contacto.objects.annotate(num_productos=Count('productos')).filter(num_productos__gt=0).order_by(
-        'nombre_fantasia')
-    context = {'productores': productores, }
-    return render(request, 'abastece/productores.html', context)
+class ProductoresLista(ListView):
+    template_name = 'abastece/productores_list.html'
+
+    def get_queryset(self):
+        return Contacto.objects.annotate(num_productos=Count('productos')) \
+            .filter(num_productos__gt=0).order_by('nombre_fantasia')
 
 
 @login_required
@@ -129,6 +130,7 @@ def pedidos_planilla(request):
     fila_totales['columnas'].extend([pedido.importe for pedido in pedidos])
     fila_totales['importe_nodo'] = sum([fila['importe_nodo'] for fila in planilla])
     fila_totales['importe_total'] = sum([fila['importe_total'] for fila in planilla])
+    fila_totales['importe_atizar'] = fila_totales['importe_total'] - fila_totales['importe_nodo']
 
     context = {'encabezado': fila_encabezado,
                'filas': planilla,
@@ -143,11 +145,12 @@ class PedidosCrear(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('pedido-planilla')
 
     def get_context_data(self, **kwargs):
+        ciclo = Ciclo.objects.latest("inicio")
         data = super(PedidosCrear, self).get_context_data(**kwargs)
         if self.request.POST:
-            data['items_pedido'] = ItemPedidoFormset(self.request.POST)
+            data['items_pedido'] = ItemPedidoFormset(self.request.POST, form_kwargs={'ciclo': ciclo})
         else:
-            data['items_pedido'] = ItemPedidoFormset()
+            data['items_pedido'] = ItemPedidoFormset(form_kwargs={'ciclo': ciclo})
         return data
 
     def form_valid(self, form):

@@ -1,4 +1,5 @@
 {% extends "abastece/base.html" %}
+{% load static %}
 {% block title %}Planilla de PEDIDOS{% endblock %}
 {% block content %}
 <main role="main">
@@ -49,6 +50,11 @@
             <td>{{ totales.importe_nodo }}</td>
             <td>{{ totales.importe_total }}</td>
         </tr>
+        <tr>
+            <td colspan="{{ totales.columnas|length|add:4 }}"></td>
+            <td>Para la red Atizar:</td>
+            <td>{{ totales.importe_atizar }}</td>
+        </tr>
         </tbody>
 
 
@@ -56,6 +62,6 @@
     {% else %}
     <p>No hay pedidos.</p>
     {% endif %}
-    <a href="crear">Agregar pedido</a>
+    <a href="{% url 'pedido-crear' %}">Agregar pedido</a>
 </main>
 {% endblock %}
