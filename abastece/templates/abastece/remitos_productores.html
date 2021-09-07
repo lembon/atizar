@@ -1,21 +1,22 @@
-{% extends "abastece/base.html" %}
+{% extends "abastece/base_pdf.html" %}
 {% block title %}Remitos Productores{% endblock %}
 {% block styles %}
 <style>
-        @page {
-            size: "A4";
-            margin: 1.0cm 1.5cm 3.5cm 1.5cm;
-        }
-        body {
-            width: 100% !important;
-            height: 100%;
-            color: black;
-            font-size: 100%;
-            font-family: 'Helvetica', sans-serif;
-            line-height: 1.65;
-            -webkit-font-smoothing: antialiased;
-            -webkit-text-size-adjust: none;
-        }
+    @page {
+        size: "A4";
+        margin: 0.5cm 1.0cm 1.0cm 0.5cm;
+    }
+
+    body {
+        width: 100% !important;
+        height: 100%;
+        color: black;
+        font-size: 80%;
+        font-family: 'Helvetica', sans-serif;
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+        -webkit-text-size-adjust: none;
+    }
 
 </style>
 {% endblock %}

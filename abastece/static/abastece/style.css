@@ -10,7 +10,15 @@ table {
     margin-top: 1rem;
     /*display: block;*/
     overflow-x: auto;
+
+}
+
+table.planilla {
     white-space: nowrap;
+}
+
+table.remito td {
+    font-size: 0.9mm !important;
 }
 
 table, th {

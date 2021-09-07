@@ -7,9 +7,8 @@ from .models import ItemPedido, Pedido, ProductoVariedadCiclo
 class ItemPedidoForm(forms.ModelForm):
     def __init__(self, ciclo, *args, **kwargs):
         super(ItemPedidoForm, self).__init__(*args, **kwargs)
-        self.fields['producto_variedad_ciclo'].queryset = ProductoVariedadCiclo.objects.filter(ciclo=ciclo)
-        # .order_by(
-        #     'producto_variedad__producto__productor', 'producto_variedad__pk')
+        self.fields['producto_variedad_ciclo'].queryset = ProductoVariedadCiclo.objects.filter(ciclo=ciclo).order_by(
+            "producto_variedad")
 
     class Meta:
         model = ItemPedido
