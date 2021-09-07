@@ -173,11 +173,13 @@ class PedidosModificar(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('pedido-planilla')
 
     def get_context_data(self, **kwargs):
+        ciclo = Ciclo.objects.latest("inicio")
         data = super(PedidosModificar, self).get_context_data(**kwargs)
         if self.request.POST:
-            data['items_pedido'] = ItemPedidoFormset(self.request.POST, instance=self.object)
+            data['items_pedido'] = ItemPedidoFormset(self.request.POST, instance=self.object,
+                                                     form_kwargs={'ciclo': ciclo})
         else:
-            data['items_pedido'] = ItemPedidoFormset(instance=self.object)
+            data['items_pedido'] = ItemPedidoFormset(instance=self.object, form_kwargs={'ciclo': ciclo})
         return data
 
     def form_valid(self, form):
