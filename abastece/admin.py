@@ -81,7 +81,7 @@ class ProductoAdmin(admin.ModelAdmin):
 
 @admin.register(ProductoVariedad)
 class ProductoVariedadAdmin(admin.ModelAdmin):
-    list_display = ('id', 'get_productor', 'producto', '__str__', 'en_proximo_ciclo')
+    list_display = ('id', 'get_productor', 'producto', 'get_presentacion', '__str__', 'en_proximo_ciclo')
     list_display_links = None
     list_filter = (
         ('producto__productor', admin.RelatedOnlyFieldListFilter),
@@ -92,6 +92,9 @@ class ProductoVariedadAdmin(admin.ModelAdmin):
 
     def get_productor(self, obj):
         return obj.producto.productor
+
+    def get_presentacion(self, obj):
+        return obj.producto.presentacion
 
     get_productor.admin_order_field = 'Productor'  # Allows column order sorting
     get_productor.short_description = 'Productor'  # Renames column head
