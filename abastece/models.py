@@ -26,7 +26,7 @@ class Domicilio(models.Model):
 
 
 class Contacto(models.Model):
-    usuario = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    usuario = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True)
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
     nombre_fantasia = models.CharField(max_length=100, blank=True)
