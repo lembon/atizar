@@ -1,14 +1,15 @@
-{% extends "abastece/base.html" %}
+{% extends "abastece/base_pdf.html" %}
 {% block title %}Remito Nodo{% endblock %}
 {% block styles %}
 <style>
-        @page {
-            size: "A4";
-            margin: 1.0cm 1.5cm 3.5cm 1.5cm;
-        }
-        body {
-            width: 100% !important;
-            height: 100%;
+    @page {
+        size: "A4";
+        margin: 1.0cm 1.5cm 3.5cm 1.5cm;
+    }
+
+    body {
+        width: 100% !important;
+        height: 100%;
             color: black;
             font-size: 100%;
             font-family: 'Helvetica', sans-serif;
@@ -31,7 +32,7 @@
         remito.nodo.get_referente.email }}
         <br>Domicilio: {{ remito.nodo.get_referente.domicilio }}</p>
     {% if remito.items %}
-    <table class="table">
+    <table class="table remito">
         <thead class="thead-dark">
         <tr>
             <th>Cód.</th>
@@ -46,6 +47,7 @@
         </tr>
         </thead>
         {% for item in remito.items %}
+        <tbody>
         <tr>
             <td>{{ item.producto_variedad_ciclo__producto_variedad }}</td>
             <td>{{ item.producto_ciclo.producto.productor }}</td>
@@ -67,6 +69,7 @@
             <td colspan="8" style="text-align:right">Para Atizar Central:</td>
             <td>{{ remito.importe_para_central }}</td>
         </tr>
+        </tbody>
     </table>
     {% else %}
     <p>Sin pedidos</p>

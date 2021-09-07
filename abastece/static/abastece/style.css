@@ -17,6 +17,10 @@ table.planilla {
     white-space: nowrap;
 }
 
+table.remito td {
+    font-size: 0.9mm !important;
+}
+
 table, th {
     border: 1px solid gray;
 }
