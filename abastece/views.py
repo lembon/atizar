@@ -33,7 +33,8 @@ def catalogo(request):
 
 def catalogo_pdf(request):
     ciclo = Ciclo.objects.latest("inicio")
-    variedades_en_ciclo = ProductoVariedadCiclo.objects.filter(ciclo=ciclo)
+    variedades_en_ciclo = ProductoVariedadCiclo.objects.filter(ciclo=ciclo).order_by(
+        'producto_variedad__producto__productor', 'producto_variedad__producto', 'producto_variedad__id')
     context = {'variedades_en_ciclo': variedades_en_ciclo, }
     html_string = render_to_string('abastece/catalogo_pdf.html', context)
     response = HttpResponse(content_type="application/pdf")

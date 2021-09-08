@@ -1,25 +1,6 @@
 {% extends "abastece/base_pdf.html" %}
 {% block title %}Remitos Productores{% endblock %}
-{% block styles %}
-<style>
-    @page {
-        size: "A4";
-        margin: 0.5cm 1.0cm 1.0cm 0.5cm;
-    }
 
-    body {
-        width: 100% !important;
-        height: 100%;
-        color: black;
-        font-size: 80%;
-        font-family: 'Helvetica', sans-serif;
-        line-height: 1.65;
-        -webkit-font-smoothing: antialiased;
-        -webkit-text-size-adjust: none;
-    }
-
-</style>
-{% endblock %}
 
 {% block content %}
 <main role="main">
@@ -32,7 +13,7 @@
     <p>Referente: {{ remito.productor.nombre }} {{ remito.productor.apellido }} - Tel: {{ remito.productor.telefono }} -
         Mail: {{ remito.productor.email }}
         <br>Domicilio: {{ remito.productor.domicilio }}</p>
-    <table class="table">
+    <table class="table remito">
         <thead class="thead-dark">
         <tr>
             <th>Cód.</th>
