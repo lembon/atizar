@@ -23,15 +23,13 @@
         <td rowspan="{{ variedades|length }}">{{ variedad.producto_variedad.producto.titulo }}</td>
         {% endifchanged %}
         {% ifchanged %}
-        <td if rowspan="{{ variedades|length }}" variedad.producto_variedad.descripcion== {%
-        "UNICA" %} colspan="2" {% endif %}> {{ variedad.producto_variedad.producto.descripcion }}
-        </td>{% endifchanged %}
+        <td rowspan="{{ variedades|length }}" {% if variedad.producto_variedad.descripcion == "UNICA" %} colspan="2" {% endif %}> {{ variedad.producto_variedad.producto.descripcion }}</td>{% endifchanged %}
         {% if variedad.producto_variedad.descripcion != "UNICA" %}
         <td>{{ variedad.producto_variedad.descripcion }}</td>
         {% endif %}
         {% ifchanged %}
-        <td rowspan="{{ variedades|length }}" style="white-space: nowrap;">{{
-            variedad.producto_variedad.producto.presentacion }}
+        <td rowspan="{{ variedades|length }}" style="white-space: nowrap;">
+            {{ variedad.producto_variedad.producto.presentacion }}
         </td>
         {% endifchanged %}
         {% ifchanged %}
