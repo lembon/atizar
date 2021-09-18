@@ -141,6 +141,10 @@ class Producto(models.Model):
     def presentacion(self):
         return "{} {} {}".format(self.envase, self.cantidad, self.unidad)
 
+    @property
+    def presentacion_corta(self):
+        return "{} {}".format(self.cantidad, self.unidad)
+
 class ProductoVariedad(models.Model):
     producto = models.ForeignKey(Producto, models.CASCADE)
     descripcion = models.CharField(max_length=200, default="UNICA")
@@ -252,10 +256,11 @@ class ProductoVariedadCiclo(models.Model):
         return ProductoCiclo.objects.get(ciclo=self.ciclo, producto=self.producto_variedad.producto)
 
     def __str__(self):
-        return "{:05d} | {}, {}, {} | {}".format(self.producto_variedad.pk,
+        return "{:05d} | {}, {} {}, {}, | {}".format(self.producto_variedad.pk,
                                                  self.producto_variedad.producto.productor,
                                                  self.producto_variedad.producto,
-                                                 self.producto_variedad,
+                                                 self.producto_variedad if self.producto_variedad.__str__() != 'UNICA' else '',
+                                                 self.producto_variedad.producto.presentacion_corta,
                                                  self.producto_ciclo.precio)
 
 class Pedido(models.Model):
