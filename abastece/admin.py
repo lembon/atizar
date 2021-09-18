@@ -184,7 +184,7 @@ class ItemPedidoInline(admin.TabularInline):
 
 @admin.register(Pedido)
 class PedidoAdmin(admin.ModelAdmin):
-    list_display = ('consumidor',)
+    list_display = ('consumidor','nombre','timestamp','importe')
 
     def get_queryset(self, request):
         qs = super(PedidoAdmin, self).get_queryset(request)
