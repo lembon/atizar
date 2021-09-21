@@ -7,43 +7,43 @@
     <h1 class="text-center">Atizar Abastece - Remitos a Productores</h1>
     <br>
     {% if remitos %}
-    {% for remito in remitos %}
-    {% if remito.items %}
-    <h3>Productor: {{ remito.productor }}</h3>
-    <p>Referente: {{ remito.productor.nombre }} {{ remito.productor.apellido }} - Tel: {{ remito.productor.telefono }} -
-        Mail: {{ remito.productor.email }}
-        <br>Domicilio: {{ remito.productor.domicilio }}</p>
-    <table class="table remito">
-        <thead class="thead-dark">
-        <tr>
-            <th>Cód.</th>
-            <th>Producto</th>
-            <th>Variedad</th>
-            <th>Presentación</th>
-            <th>Costo</th>
-            <th>Cantidad</th>
-            <th>Importe</th>
-        </tr>
-        </thead>
-        {% for item in remito.items %}
-        <tr>
-            <td>{{ item.producto_variedad.id }}</td>
-            <td>{{ item.producto_variedad.producto }}</td>
-            <td>{{ item.producto_variedad }}</td>
-            <td>{{ item.producto_variedad.producto.presentacion }}</td>
-            <td>{{ item.producto_variedad.producto.costo_produccion }}</td>
-            <td>{{ item.cantidad__sum }}</td>
-            <td>{{ item.importe }}</td>
-        </tr>
+        {% for remito in remitos %}
+            {% if remito.items %}
+                <h3>Productor: {{ remito.productor }}</h3>
+                <p>Referente: {{ remito.productor.nombre }} {{ remito.productor.apellido }} - Tel: {{ remito.productor.telefono }} -
+                    Mail: {{ remito.productor.email }}
+                    <br>Domicilio: {{ remito.productor.domicilio }}</p>
+                    <table style="page-break-after: always" class="table remito">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th>Cód.</th>
+                            <th>Producto</th>
+                            <th>Variedad</th>
+                            <th>Presentación</th>
+                            <th>Costo</th>
+                            <th>Cantidad</th>
+                            <th>Importe</th>
+                        </tr>
+                        </thead>
+                        {% for item in remito.items %}
+                        <tr>
+                            <td>{{ item.producto_variedad.id }}</td>
+                            <td>{{ item.producto_variedad.producto }}</td>
+                            <td>{{ item.producto_variedad }}</td>
+                            <td>{{ item.producto_variedad.producto.presentacion }}</td>
+                            <td>{{ item.producto_variedad.producto.costo_produccion }}</td>
+                            <td>{{ item.cantidad__sum }}</td>
+                            <td>{{ item.importe }}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr>
+                            <td colspan="6"></td>
+                            <td>{{ remito.importe_total }}</td>
+                        </tr>
+                    </table>
+                <br>
+            {% endif %}
         {% endfor %}
-        <tr>
-            <td colspan="6"></td>
-            <td>{{ remito.importe_total }}</td>
-        </tr>
-    </table>
-    <br>
-    {% endif %}
-    {% endfor %}
 
     {% else %}
     <p>No hay remitos.</p>
