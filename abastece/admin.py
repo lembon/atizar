@@ -74,7 +74,7 @@ class ProductoAdmin(admin.ModelAdmin):
     fieldsets = [
         (None, {'fields': ['productor', 'titulo', 'descripcion']}),
         ('Presentación', {'fields': [('envase', 'cantidad', 'unidad')]}),
-        ('Costos', {'fields': [('costo_produccion', 'costo_financiero', 'costo_transporte', 'costo_postproceso')]})
+        ('Costos', {'fields': [('costo_produccion', 'costo_financiero', 'costo_transporte', 'costo_postproceso'), ('porcentaje_aporte')]})
     ]
     inlines = [ProductoVariedadInline, ImagenProductoInline]
     ordering = ['productor', 'pk']

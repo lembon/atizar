@@ -128,6 +128,7 @@ class Producto(models.Model):
     costo_transporte = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     costo_financiero = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     costo_postproceso = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    porcentaje_aporte = models.IntegerField(default=100, help_text="El porcentaje de aportes que se aplicará al producto.")
 
     def __str__(self):
         return self.titulo
@@ -217,26 +218,36 @@ class ProductoCiclo(models.Model):
             self.costo_transporte = self.producto.costo_transporte
             self.costo_financiero = self.producto.costo_financiero
             self.costo_postproceso = self.producto.costo_postproceso
-            self.precio = self.precio_sugerido()
+            self.precio = self.precio_sugerido
         super(ProductoCiclo, self).save(*args, **kwargs)
 
+    @property
     def costos(self):
         return self.costo_produccion + self.costo_transporte + self.costo_financiero + self.costo_postproceso
 
+    def _aporte(self, aporte):
+        return (self.costo_produccion
+                * (Decimal(aporte) / 100)
+                * (Decimal(self.producto.porcentaje_aporte) / 100))
+    @property
     def aporte_deposito(self):
-        return self.costo_produccion * Decimal(self.ciclo.aporte_deposito) / 100
+        return self._aporte(self.ciclo.aporte_deposito)
 
+    @property
     def aporte_central(self):
-        return self.costo_produccion * Decimal(self.ciclo.aporte_central) / 100
+        return self._aporte(self.ciclo.aporte_central)
 
+    @property
     def aporte_nodo(self):
-        return self.costo_produccion * Decimal(self.ciclo.aporte_nodo) / 100
+        return self._aporte(self.ciclo.aporte_nodo)
 
+    @property
     def aporte_logistica(self):
-        return self.costo_produccion * Decimal(self.ciclo.aporte_logistica) / 100
+        return self._aporte(self.ciclo.aporte_logistica)
 
+    @property
     def precio_sugerido(self):
-        return self.costos() + self.aporte_deposito() + self.aporte_central() + self.aporte_nodo() + self.aporte_logistica()
+        return self.costos + self.aporte_deposito + self.aporte_central + self.aporte_nodo + self.aporte_logistica
 
     def __str__(self):
         return "{} - {}".format(self.producto.productor, self.producto.titulo)
