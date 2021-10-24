@@ -124,7 +124,7 @@ def pedidos_planilla(request):
             except ItemPedido.DoesNotExist:
                 fila['columnas'].append(0)
         fila['cantidad_total'] = sum(fila['columnas'])
-        fila['importe_nodo'] = fila['cantidad_total'] * producto_var_cic.producto_ciclo.aporte_nodo()
+        fila['importe_nodo'] = fila['cantidad_total'] * producto_var_cic.producto_ciclo.aporte_nodo
         fila['importe_total'] = fila['cantidad_total'] * producto_var_cic.producto_ciclo.precio
         planilla.append(fila)
 

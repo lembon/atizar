@@ -41,6 +41,7 @@ class ContactoAdmin(admin.ModelAdmin):
     fieldsets = [
         (None, {'fields': ['usuario', 'nombre', 'apellido', 'nombre_fantasia', 'descripcion', 'web']}),
         ('Datos de Contacto', {'fields': ['telefono', 'domicilio', 'email'], }),
+        ('Otros', {'fields': ['cbu_o_alias', 'notas'], }),
     ]
     inlines = [ImagenContactoInline]
 
@@ -74,7 +75,7 @@ class ProductoAdmin(admin.ModelAdmin):
     fieldsets = [
         (None, {'fields': ['productor', 'titulo', 'descripcion']}),
         ('Presentación', {'fields': [('envase', 'cantidad', 'unidad')]}),
-        ('Costos', {'fields': [('costo_produccion', 'costo_financiero', 'costo_transporte', 'costo_postproceso')]})
+        ('Costos', {'fields': [('costo_produccion', 'costo_financiero', 'costo_transporte', 'costo_postproceso'), ('porcentaje_aporte')]})
     ]
     inlines = [ProductoVariedadInline, ImagenProductoInline]
     ordering = ['productor', 'pk']

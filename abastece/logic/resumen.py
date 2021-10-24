@@ -99,10 +99,10 @@ def resumen_pedidos(ciclo):
         item['Costo Transporte'] = producto_ciclo.costo_transporte
         item['Costo Financiero'] = producto_ciclo.costo_financiero
         item['Costo Postproceso'] = producto_ciclo.costo_postproceso
-        item['A Nodos'] = producto_ciclo.costo_produccion * Decimal(ciclo.aporte_nodo / 100)
-        item['Logistica'] = producto_ciclo.costo_produccion * Decimal(ciclo.aporte_logistica / 100)
-        item['A la red'] = producto_ciclo.costo_produccion * Decimal(ciclo.aporte_central / 100)
-        item['A depositos'] = producto_ciclo.costo_produccion * Decimal(ciclo.aporte_deposito / 100)
+        item['A Nodos'] = producto_ciclo.aporte_nodo
+        item['Logistica'] = producto_ciclo.aporte_logistica
+        item['A la red'] = producto_ciclo.aporte_central
+        item['A depositos'] = producto_ciclo.aporte_deposito
         item['Precio final'] = producto_ciclo.precio
         item['Importe Total'] = producto_ciclo.precio * item['Cantidad']
     return items_agrupados
