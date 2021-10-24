@@ -34,6 +34,8 @@ class Contacto(models.Model):
     domicilio = models.ForeignKey(Domicilio, models.SET_NULL, null=True, blank=True)
     email = models.EmailField(blank=True)
     descripcion = models.TextField(blank=True)
+    cbu_o_alias = models.CharField(max_length=100, blank=True)
+    notas = models.TextField(blank=True) # Datos solo internos, no deben ser publicado
     web = models.URLField(blank=True)
 
     def __str__(self):

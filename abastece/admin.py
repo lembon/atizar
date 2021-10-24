@@ -41,6 +41,7 @@ class ContactoAdmin(admin.ModelAdmin):
     fieldsets = [
         (None, {'fields': ['usuario', 'nombre', 'apellido', 'nombre_fantasia', 'descripcion', 'web']}),
         ('Datos de Contacto', {'fields': ['telefono', 'domicilio', 'email'], }),
+        ('Otros', {'fields': ['cbu_o_alias', 'notas'], }),
     ]
     inlines = [ImagenContactoInline]
 
