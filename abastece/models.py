@@ -197,6 +197,9 @@ class Ciclo(models.Model):
     def __str__(self):
         return "Del {} al {}".format(self.inicio.date(), self.cierre.date())
 
+    @property
+    def en_curso(self):
+        return self.inicio < timezone.now() < self.cierre
 
 class ProductoCiclo(models.Model):
     ciclo = models.ForeignKey(Ciclo, models.CASCADE)
@@ -285,12 +288,16 @@ class Pedido(models.Model):
         return str(self.consumidor)
 
     @property
+    def ciclo(self):
+        return Ciclo.objects.get(inicio__lte=self.timestamp, cierre__gte=self.timestamp)
+
+    @property
     def importe(self):
         return sum([item.importe for item in self.itempedido_set.all()])
 
     def clean(self):
         ciclo = Ciclo.objects.latest("inicio")
-        if not ciclo.inicio < self.timestamp < ciclo.cierre:
+        if not ciclo.inicio < timezone.now() < ciclo.cierre:
             raise ValidationError(u'No hay un ciclo en curso.')
 
     def save(self, *args, **kwargs):
