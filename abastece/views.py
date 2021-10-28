@@ -1,16 +1,16 @@
 import csv
 
+from django.contrib import messages
 from django.db import transaction
 from django.db.models import Count
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from weasyprint import HTML
-
 from abastece.forms import ItemPedidoFormset
 from abastece.logic import resumen
 from abastece.models import Ciclo, ProductoVariedadCiclo, Contacto, Pedido, Nodo, ItemPedido, Membresia
@@ -105,6 +105,9 @@ def panel_contacto(request):
 
 @login_required
 def pedidos_planilla(request):
+    if not hasattr(request.user, 'contacto'):
+        messages.add_message(request, messages.ERROR, "Su usuario no está vinculado a ningún contacto. Solicite la vinculación.")
+        return redirect(reverse_lazy('Panel'))
     ciclo = Ciclo.objects.latest("inicio")
     nodo = request.user.contacto.get_nodos_referente()[0]
     pedidos = Pedido.objects.filter(consumidor__nodo=nodo, timestamp__range=(ciclo.inicio, ciclo.cierre))
@@ -200,6 +203,18 @@ class PedidosEliminar(LoginRequiredMixin, DeleteView):
     template_name_suffix = '_confirmar_eliminar'
     success_url = reverse_lazy('pedido-planilla')
 
+    def get(self, request, *args, **kwargs):
+        self.pedido = self.get_object()
+        es_referente = Membresia.objects.filter(contacto=self.request.user.contacto,
+                                                nodo=self.pedido.consumidor.nodo,
+                                                rol=2).exists()
+        if not es_referente:
+            messages.add_message(request, messages.ERROR, "No es posible eliminar un pedido de un nodo en el que no es referente.")
+            return redirect(self.success_url)
+        if not self.pedido.ciclo.en_curso:
+            messages.add_message(request, messages.ERROR, "No es posible eliminar un pedido hecho en un ciclo pasado.")
+            return redirect(self.success_url)
+        return super().get(request, *args, **kwargs)
 
 class NodosLista(ListView):
     model = Nodo
