@@ -84,6 +84,16 @@
         <div class="row justify-content-center">
             <div class="col-11">
                 <hr class="mt-0 mb-4">
+                {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li {% if message.tags %} class="{{ message.tags }}"{% endif %}><h3>
+                            {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}Importante: {% endif %}
+                            {{ message }}</h3>
+                        </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
                 {% block content %}
                 {% endblock %}
             </div>
