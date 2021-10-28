@@ -129,9 +129,9 @@ class MembresiaInline(admin.TabularInline):
 
 @admin.register(Nodo)
 class NodoAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'domicilio', 'get_referente_nombre', 'get_referente_telefono')
+    list_display = ('__str__', 'domicilio', 'get_referente_nombre', 'get_referente_telefono', 'mostrar')
     fieldsets = [
-        (None, {'fields': ['nombre', 'domicilio', 'domicilio_recepcion']}),
+        (None, {'fields': ['nombre', 'mostrar', 'domicilio', 'domicilio_recepcion']}),
     ]
     inlines = [MembresiaInline]
 
