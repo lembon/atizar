@@ -218,6 +218,8 @@ class PedidosEliminar(LoginRequiredMixin, DeleteView):
 
 class NodosLista(ListView):
     model = Nodo
+    def get_queryset(self):
+        return Nodo.objects.filter(mostrar=True)
 
 
 class PedidosLista(LoginRequiredMixin, ListView):

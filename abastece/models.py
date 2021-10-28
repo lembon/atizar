@@ -70,6 +70,7 @@ class ImagenContacto(models.Model):
 
 class Nodo(models.Model):
     nombre = models.CharField(max_length=200)
+    mostrar = models.BooleanField(verbose_name='Mostrar en listado', default=True)
     domicilio = models.ForeignKey(Domicilio, models.PROTECT)  # Domicilio de funcionamiento del nodo
     domicilio_recepcion = models.ForeignKey(Domicilio,
                                             models.SET_NULL,
