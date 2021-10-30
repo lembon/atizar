@@ -1,4 +1,3 @@
-import datetime
 from decimal import Decimal
 
 from django.conf import settings
@@ -35,7 +34,7 @@ class Contacto(models.Model):
     email = models.EmailField(blank=True)
     descripcion = models.TextField(blank=True)
     cbu_o_alias = models.CharField(max_length=100, blank=True)
-    notas = models.TextField(blank=True) # Datos solo internos, no deben ser publicado
+    notas = models.TextField(blank=True)  # Datos solo internos, no deben ser publicado
     web = models.URLField(blank=True)
 
     def __str__(self):
@@ -56,12 +55,14 @@ class Contacto(models.Model):
     def get_nodos_miembro(self):
         return Nodo.objects.filter(membresia__in=self.membresias.all())
 
+
 class ImagenContacto(models.Model):
     contacto = models.ForeignKey(Contacto, models.CASCADE)
     imagen = models.ImageField(upload_to=get_upload_path)
 
     def image_tag(self):
         return mark_safe('<img src="%s%s" width="150" height="150" />' % (settings.MEDIA_URL, self.imagen))
+
     image_tag.short_description = 'Imagen'
 
     def upload_path(self):
@@ -89,11 +90,13 @@ class Nodo(models.Model):
     def get_referente_nombre(self):
         contacto = self.get_referente()
         return contacto.nombre + ' ' + contacto.apellido
+
     get_referente_nombre.short_description = 'Referente'
 
     def get_referente_telefono(self):
         contacto = self.get_referente()
         return contacto.telefono
+
     get_referente_telefono.short_description = 'Teléfono'
 
 
@@ -110,6 +113,7 @@ class Membresia(models.Model):
     def __str__(self):
         return "{}, {} (Nodo {}, {})".format(self.contacto.apellido, self.contacto.nombre, self.nodo,
                                              self.get_rol_display())
+
 
 class Producto(models.Model):
     UNIDADES = (
@@ -131,7 +135,8 @@ class Producto(models.Model):
     costo_transporte = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     costo_financiero = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     costo_postproceso = models.DecimalField(max_digits=8, decimal_places=2, default=0)
-    porcentaje_aporte = models.IntegerField(default=100, help_text="El porcentaje de aportes que se aplicará al producto.")
+    porcentaje_aporte = models.IntegerField(default=100,
+                                            help_text="El porcentaje de aportes que se aplicará al producto.")
 
     def __str__(self):
         return self.titulo
@@ -148,6 +153,7 @@ class Producto(models.Model):
     @property
     def presentacion_corta(self):
         return "{} {}".format(self.cantidad, self.unidad)
+
 
 class ProductoVariedad(models.Model):
     producto = models.ForeignKey(Producto, models.CASCADE)
@@ -202,6 +208,7 @@ class Ciclo(models.Model):
     def en_curso(self):
         return self.inicio < timezone.now() < self.cierre
 
+
 class ProductoCiclo(models.Model):
     ciclo = models.ForeignKey(Ciclo, models.CASCADE)
     producto = models.ForeignKey(Producto, models.CASCADE)
@@ -235,6 +242,7 @@ class ProductoCiclo(models.Model):
         return (self.costo_produccion
                 * (Decimal(aporte) / 100)
                 * (Decimal(self.producto.porcentaje_aporte) / 100))
+
     @property
     def aporte_deposito(self):
         return self._aporte(self.ciclo.aporte_deposito)
@@ -273,12 +281,15 @@ class ProductoVariedadCiclo(models.Model):
         return ProductoCiclo.objects.get(ciclo=self.ciclo, producto=self.producto_variedad.producto)
 
     def __str__(self):
-        return "{:05d} | {}, {} {}, {}, | {}".format(self.producto_variedad.pk,
-                                                 self.producto_variedad.producto.productor,
-                                                 self.producto_variedad.producto,
-                                                 self.producto_variedad if self.producto_variedad.__str__() != 'UNICA' else '',
-                                                 self.producto_variedad.producto.presentacion_corta,
-                                                 self.producto_ciclo.precio)
+        return "{:05d} | {}, {} {}, {}, | {}".format(
+            self.producto_variedad.pk,
+            self.producto_variedad.producto.productor,
+            self.producto_variedad.producto,
+            self.producto_variedad if self.producto_variedad.__str__() != 'UNICA' else '',
+            self.producto_variedad.producto.presentacion_corta,
+            self.producto_ciclo.precio
+        )
+
 
 class Pedido(models.Model):
     timestamp = models.DateTimeField('fecha y hora', editable=False, default=timezone.now)
@@ -304,6 +315,7 @@ class Pedido(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         return super().save(*args, **kwargs)
+
 
 class ItemPedido(models.Model):
     pedido = models.ForeignKey(Pedido, models.CASCADE)

@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from django.db.models import Sum
 
 from abastece.models import Nodo, Pedido, ItemPedido, ProductoCiclo, ProductoVariedad, ProductoVariedadCiclo, Contacto
@@ -15,6 +13,7 @@ TOTALES_RESUMEN = {'Costo Produccion': '=SUMA.PRODUCTO($E2:$E{filas};F2:F{filas}
                    'Precio final': '=SUMA.PRODUCTO($E2:$E{filas};N2:N{filas})',
                    'Importe Total': '=SUMA(O2:O{filas})',
                    }
+
 
 def remitos_nodos(ciclo):
     return [remito_nodo(ciclo, nodo) for nodo in Nodo.objects.all()]
@@ -43,8 +42,10 @@ def remito_nodo(ciclo, nodo):
     remito['ciclo'] = ciclo
     return remito
 
+
 def remitos_productores(ciclo):
     return [remito_productor(ciclo, productor) for productor in Contacto.objects.all()]
+
 
 def remito_productor(ciclo, productor):
     items = ItemPedido.objects.filter(pedido__timestamp__range=(ciclo.inicio, ciclo.cierre),
@@ -61,6 +62,7 @@ def remito_productor(ciclo, productor):
     remito['productor'] = productor
     remito[ciclo] = ciclo
     return remito
+
 
 def resumen_post_proceso(ciclo):
     items = ItemPedido.objects.filter(pedido__timestamp__range=(ciclo.inicio, ciclo.cierre),
@@ -80,12 +82,13 @@ def resumen_post_proceso(ciclo):
 def resumen_pedidos(ciclo):
     items_pedidos = ItemPedido.objects.filter(pedido__timestamp__range=(ciclo.inicio, ciclo.cierre)) \
         .order_by('producto_variedad_ciclo__producto_variedad__producto__productor')
-    items_agrupados = list(items_pedidos.values('producto_variedad_ciclo',
-                                                'producto_variedad_ciclo__producto_variedad',
-                                                'producto_variedad_ciclo__producto_variedad__descripcion',
-                                                'producto_variedad_ciclo__producto_variedad__producto__titulo',
-                                                'producto_variedad_ciclo__producto_variedad__producto__productor__nombre_fantasia',
-                                                )
+    items_agrupados = list(items_pedidos.values(
+        'producto_variedad_ciclo',
+        'producto_variedad_ciclo__producto_variedad',
+        'producto_variedad_ciclo__producto_variedad__descripcion',
+        'producto_variedad_ciclo__producto_variedad__producto__titulo',
+        'producto_variedad_ciclo__producto_variedad__producto__productor__nombre_fantasia',
+    )
                            .annotate(Sum('cantidad')))
     for item in items_agrupados:
         producto_ciclo = ProductoVariedadCiclo.objects.get(pk=item['producto_variedad_ciclo']).producto_ciclo
