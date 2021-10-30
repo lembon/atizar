@@ -106,7 +106,8 @@ def panel_contacto(request):
 @login_required
 def pedidos_planilla(request):
     if not hasattr(request.user, 'contacto'):
-        messages.add_message(request, messages.ERROR, "Su usuario no está vinculado a ningún contacto. Solicite la vinculación.")
+        messages.add_message(request, messages.ERROR,
+                             "Su usuario no está vinculado a ningún contacto. Solicite la vinculación.")
         return redirect(reverse_lazy('Panel'))
     ciclo = Ciclo.objects.latest("inicio")
     nodo = request.user.contacto.get_nodos_referente()[0]
@@ -209,15 +210,19 @@ class PedidosEliminar(LoginRequiredMixin, DeleteView):
                                                 nodo=self.pedido.consumidor.nodo,
                                                 rol=2).exists()
         if not es_referente:
-            messages.add_message(request, messages.ERROR, "No es posible eliminar un pedido de un nodo en el que no es referente.")
+            messages.add_message(request, messages.ERROR,
+                                 "No es posible eliminar un pedido de un nodo en el que no es referente.")
             return redirect(self.success_url)
         if not self.pedido.ciclo.en_curso:
-            messages.add_message(request, messages.ERROR, "No es posible eliminar un pedido hecho en un ciclo pasado.")
+            messages.add_message(request, messages.ERROR,
+                                 "No es posible eliminar un pedido hecho en un ciclo pasado.")
             return redirect(self.success_url)
         return super().get(request, *args, **kwargs)
 
+
 class NodosLista(ListView):
     model = Nodo
+
     def get_queryset(self):
         return Nodo.objects.filter(mostrar=True)
 
