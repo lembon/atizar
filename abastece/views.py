@@ -161,8 +161,11 @@ class PedidosCrear(LoginRequiredMixin, CreateView):
     model = Pedido
     fields = ['nombre']
 
+    def get_nodo(self):
+        return Nodo.objects.get(pk=self.kwargs['id_nodo'])
+
     def get_success_url(self):
-        return reverse_lazy('pedido-planilla', kwargs={'id_nodo': self.kwargs['id_nodo']})
+        return reverse_lazy('pedido-planilla', kwargs={'id_nodo': self.get_nodo().id})
 
     def get_context_data(self, **kwargs):
         ciclo = Ciclo.objects.latest("inicio")
@@ -179,7 +182,8 @@ class PedidosCrear(LoginRequiredMixin, CreateView):
         items_pedido = context['items_pedido']
         with transaction.atomic():
             self.object = form.save(commit=False)
-            self.object.consumidor = Membresia.objects.filter(contacto=self.request.user.contacto, rol=2).first()
+            self.object.consumidor = Membresia.objects.filter(contacto=self.request.user.contacto, rol=2,
+                                                              nodo=self.get_nodo()).get()
             self.object.save()
 
             if items_pedido.is_valid():
