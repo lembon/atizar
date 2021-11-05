@@ -4,12 +4,13 @@ from django.contrib import messages
 from django.db import transaction
 from django.db.models import Count
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.utils import timezone
 from weasyprint import HTML
 from abastece.forms import ItemPedidoFormset
 from abastece.logic import resumen
@@ -65,6 +66,17 @@ def remitos_productores(request):
     html.write_pdf(response, )
     return response
 
+def resumen_pedido(request, id_pedido):
+    pedido = get_object_or_404(Pedido, pk=id_pedido)
+    context = {'pedido': pedido}
+    html_string = render_to_string('abastece/resumen_pedido.html', context)
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = 'attachment; filename="resumen_pedido_{}_{}.pdf"'\
+        .format(pedido.nombre,timezone.now().strftime("%d-%m-%Y_%H-%M"))
+    html = HTML(string=html_string)
+    html.write_pdf(response, )
+    return response
+
 
 def resumen_post_proceso(request):
     ciclo = Ciclo.objects.latest("inicio")
@@ -104,13 +116,13 @@ def panel_contacto(request):
 
 
 @login_required
-def pedidos_planilla(request):
+def pedidos_planilla(request, id_nodo):
+    ciclo = Ciclo.objects.latest("inicio")
     if not hasattr(request.user, 'contacto'):
         messages.add_message(request, messages.ERROR,
                              "Su usuario no está vinculado a ningún contacto. Solicite la vinculación.")
         return redirect(reverse_lazy('Panel'))
-    ciclo = Ciclo.objects.latest("inicio")
-    nodo = request.user.contacto.get_nodos_referente()[0]
+    nodo = get_object_or_404(request.user.contacto.get_nodos_referente(), pk=id_nodo)
     pedidos = Pedido.objects.filter(consumidor__nodo=nodo, timestamp__range=(ciclo.inicio, ciclo.cierre))
     items = ItemPedido.objects.filter(pedido__in=pedidos)
     productos_variedad_ciclos = ProductoVariedadCiclo.objects.filter(itempedido__in=items). \
@@ -137,7 +149,8 @@ def pedidos_planilla(request):
     fila_totales['importe_total'] = sum([fila['importe_total'] for fila in planilla])
     fila_totales['importe_atizar'] = fila_totales['importe_total'] - fila_totales['importe_nodo']
 
-    context = {'encabezado': fila_encabezado,
+    context = {'nodo': nodo,
+               'encabezado': fila_encabezado,
                'filas': planilla,
                'totales': fila_totales}
 
@@ -147,7 +160,9 @@ def pedidos_planilla(request):
 class PedidosCrear(LoginRequiredMixin, CreateView):
     model = Pedido
     fields = ['nombre']
-    success_url = reverse_lazy('pedido-planilla')
+
+    def get_success_url(self):
+        return reverse_lazy('pedido-planilla', kwargs={'id_nodo': self.kwargs['id_nodo']})
 
     def get_context_data(self, **kwargs):
         ciclo = Ciclo.objects.latest("inicio")
@@ -156,6 +171,7 @@ class PedidosCrear(LoginRequiredMixin, CreateView):
             data['items_pedido'] = ItemPedidoFormset(self.request.POST, form_kwargs={'ciclo': ciclo})
         else:
             data['items_pedido'] = ItemPedidoFormset(form_kwargs={'ciclo': ciclo})
+        data['id_nodo'] = self.kwargs['id_nodo']
         return data
 
     def form_valid(self, form):
@@ -175,7 +191,9 @@ class PedidosCrear(LoginRequiredMixin, CreateView):
 class PedidosModificar(LoginRequiredMixin, UpdateView):
     model = Pedido
     fields = ['nombre']
-    success_url = reverse_lazy('pedido-planilla')
+
+    def get_success_url(self):
+        return reverse_lazy('pedido-planilla', kwargs={'id_nodo': self.kwargs['id_nodo']})
 
     def get_context_data(self, **kwargs):
         ciclo = Ciclo.objects.latest("inicio")
@@ -185,6 +203,7 @@ class PedidosModificar(LoginRequiredMixin, UpdateView):
                                                      form_kwargs={'ciclo': ciclo})
         else:
             data['items_pedido'] = ItemPedidoFormset(instance=self.object, form_kwargs={'ciclo': ciclo})
+        data['id_nodo'] = self.kwargs['id_nodo']
         return data
 
     def form_valid(self, form):
@@ -202,7 +221,9 @@ class PedidosModificar(LoginRequiredMixin, UpdateView):
 class PedidosEliminar(LoginRequiredMixin, DeleteView):
     model = Pedido
     template_name_suffix = '_confirmar_eliminar'
-    success_url = reverse_lazy('pedido-planilla')
+
+    def get_success_url(self):
+        return reverse_lazy('pedido-planilla', kwargs={'id_nodo': self.get_object().consumidor.nodo.pk})
 
     def get(self, request, *args, **kwargs):
         self.pedido = self.get_object()
@@ -212,17 +233,16 @@ class PedidosEliminar(LoginRequiredMixin, DeleteView):
         if not es_referente:
             messages.add_message(request, messages.ERROR,
                                  "No es posible eliminar un pedido de un nodo en el que no es referente.")
-            return redirect(self.success_url)
+            return redirect(self.get_success_url())
         if not self.pedido.ciclo.en_curso:
             messages.add_message(request, messages.ERROR,
                                  "No es posible eliminar un pedido hecho en un ciclo pasado.")
-            return redirect(self.success_url)
+            return redirect(self.get_success_url())
         return super().get(request, *args, **kwargs)
 
 
 class NodosLista(ListView):
     model = Nodo
-
     def get_queryset(self):
         return Nodo.objects.filter(mostrar=True)
 
