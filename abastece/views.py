@@ -66,13 +66,14 @@ def remitos_productores(request):
     html.write_pdf(response, )
     return response
 
+
 def resumen_pedido(request, id_pedido):
     pedido = get_object_or_404(Pedido, pk=id_pedido)
     context = {'pedido': pedido}
     html_string = render_to_string('abastece/resumen_pedido.html', context)
     response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = 'attachment; filename="resumen_pedido_{}_{}.pdf"'\
-        .format(pedido.nombre,timezone.now().strftime("%d-%m-%Y_%H-%M"))
+    response["Content-Disposition"] = 'attachment; filename="resumen_pedido_{}_{}.pdf"' \
+        .format(pedido.nombre, timezone.now().strftime("%d-%m-%Y_%H-%M"))
     html = HTML(string=html_string)
     html.write_pdf(response, )
     return response
@@ -247,6 +248,7 @@ class PedidosEliminar(LoginRequiredMixin, DeleteView):
 
 class NodosLista(ListView):
     model = Nodo
+
     def get_queryset(self):
         return Nodo.objects.filter(mostrar=True)
 
