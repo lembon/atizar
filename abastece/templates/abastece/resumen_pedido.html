@@ -1,0 +1,56 @@
+{% extends "abastece/base_pdf.html" %}
+{% block title %}Resumen Pedido {% endblock %}
+{% block styles %}
+<style>
+        @page {
+            size: "A5";
+            margin: 1.0cm 1.5cm 3.5cm 1.5cm;
+        }
+        body {
+            width: 100% !important;
+            height: 100%;
+            color: black;
+            font-size: 120%;
+            font-family: 'Helvetica', sans-serif;
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+            -webkit-text-size-adjust: none;
+        }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<main role="main">
+    <h1 class="text-center">Atizar Abastece - Resumen Pedido</h1>
+    <h3>Prosumidor: {{ pedido.nombre }}</h3>
+    <p>Nodo: {{ pedido.consumidor.nodo }}</p>
+    <p>Fecha: {{ pedido.timestamp }}</p>
+    <br>
+
+
+    <table class="table">
+        <thead class="thead-dark">
+        <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Importe</th>
+        </tr>
+        </thead>
+        {% for item in pedido.itempedido_set.all %}
+        <tr>
+            <td>{{ item.producto_variedad_ciclo }}</td>
+            <td>{{ item.cantidad }}</td>
+            <td>{{ item.importe }}</td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td></td>
+            <td>Total: </td>
+            <td>{{ pedido.importe }}</td>
+        </tr>
+    </table>
+    <br>
+
+</main>
+{% endblock %}

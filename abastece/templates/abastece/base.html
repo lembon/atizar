@@ -71,9 +71,16 @@
                 <a href="{% url 'productores-lista' %}">Productores</a>
             </li>
             {% if request.user.contacto.get_nodos_referente %}
-            <li>
-                <a href="{% url 'pedido-planilla' %}">Pedidos</a>
-            </li>
+                <li>
+                <a href="#pedidosSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Pedidos</a>
+                <ul class="collapse list-unstyled" id="pedidosSubmenu">
+                    {% for nodo in request.user.contacto.get_nodos_referente %}
+                    <li>
+                        <a href="{% url 'pedido-planilla' nodo.id %}">Nodo {{ nodo.nombre }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+                </li>
             {% endif %}
 
         </ul>

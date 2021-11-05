@@ -4,10 +4,10 @@
 {% block content %}
 
 <h1>Planilla de PEDIDOS</h1>
-<br>
+    <h3>Nodo {{ nodo.nombre }}</h3>
+    <br>
 {% if filas %}
 
-<a class="btn btn-primary" href="{% url 'pedido-crear' %}">Agregar pedido</a>
 <table class="table planilla">
     <thead class="thead-dark">
     <tr>
@@ -15,8 +15,9 @@
         <th>Producto</th>
         <th>Precio<br>Final</th>
         {% for pedido in encabezado %}
-        <th><a href="{% url 'pedido-modificar' pedido.id %}">{{ pedido.nombre }}</a><br>
+        <th><a href="{% url 'pedido-modificar' pedido.id nodo.id%}">{{ pedido.nombre }}</a><br>
             <a class="btn btn-danger btn-sm" href="{% url 'pedido-eliminar' pedido.id %}"> <i class="bi-trash"></i></a>
+            <a class="btn btn-primary btn-sm" href="{% url 'pedido-resumen' pedido.id %}"> <i class="bi-download"></i></a>
         </th>
         {% endfor %}
         <th>Total<br>Unidades</th>
@@ -66,5 +67,5 @@
     {% else %}
     <p>No hay pedidos.</p>
     {% endif %}
-<a class="btn btn-primary" href="{% url 'pedido-crear' %}">Agregar pedido</a>
+<a class="btn btn-primary" href="{% url 'pedido-crear' nodo.id %}">Agregar pedido</a>
 {% endblock %}
