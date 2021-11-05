@@ -17,8 +17,9 @@ urlpatterns = [
     path('nodos/', views.NodosLista.as_view(), name='nodo-lista'),
 
     path('pedidos/', views.PedidosLista.as_view(), name='pedido-lista'),
-    path('pedidos/planilla/', views.pedidos_planilla, name='pedido-planilla'),
-    path('pedidos/crear/', views.PedidosCrear.as_view(), name='pedido-crear'),
-    path('pedidos/modificar/<int:pk>/', views.PedidosModificar.as_view(), name='pedido-modificar'),
+    path('pedidos/resumen/<int:id_pedido>/', views.resumen_pedido, name='pedido-resumen'),
+    path('pedidos/planilla/<int:id_nodo>/', views.pedidos_planilla, name='pedido-planilla'),
+    path('pedidos/crear/<int:id_nodo>/', views.PedidosCrear.as_view(), name='pedido-crear'),
+    path('pedidos/modificar/<int:pk>/<int:id_nodo>/', views.PedidosModificar.as_view(), name='pedido-modificar'),
     path('pedidos/eliminar/<int:pk>/', views.PedidosEliminar.as_view(), name='pedido-eliminar'),
 ]
