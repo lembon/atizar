@@ -32,7 +32,7 @@ def remito_nodo(ciclo, nodo):
         item['producto_ciclo'] = ProductoCiclo.objects \
             .get(producto__pk=item['producto_variedad_ciclo__producto_variedad__producto'],
                  ciclo=ciclo)
-        item['importe_nodo'] = item['producto_ciclo'].aporte_nodo() * item['cantidad__sum']
+        item['importe_nodo'] = item['producto_ciclo'].aporte_nodo * item['cantidad__sum']
         item['importe'] = item['producto_ciclo'].precio * item['cantidad__sum']
         remito['importe_total'] += item['importe']
         remito['importe_para_nodo'] += item['importe_nodo']
