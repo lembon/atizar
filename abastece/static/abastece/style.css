@@ -10,7 +10,6 @@ table {
     margin-top: 1rem;
     /*display: block;*/
     overflow-x: auto;
-
 }
 
 table.planilla {
@@ -105,4 +104,11 @@ ul ul a {
     font-size: 0.9em !important;
     padding-left: 30px !important;
     background: #cc5718;
+}
+
+.pedido-item_producto-variedad {
+    width: 100%;
+}
+.pedido-item_cantidad {
+    width: 75px;
 }
