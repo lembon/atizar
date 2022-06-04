@@ -15,12 +15,14 @@
         <th>Producto</th>
         <th>Precio<br>Final</th>
         {% for pedido in encabezado %}
-        <th><a href="{% url 'pedido-modificar' pedido.id nodo.id%}">{{ pedido.nombre }}</a><br>
+        <th><a href="{% url 'pedido-modificar' pedido.id nodo.id%}">{{ pedido.nombre|truncatechars:8 }}</a><br>
+            <div class="btn-group" role="group" aria-label="Basic example">
             <a class="btn btn-danger btn-sm" href="{% url 'pedido-eliminar' pedido.id %}"> <i class="bi-trash"></i></a>
             <a class="btn btn-primary btn-sm" href="{% url 'pedido-resumen' pedido.id %}"> <i class="bi-download"></i></a>
+            </div>
         </th>
         {% endfor %}
-        <th>Total<br>Unidades</th>
+        <th>Total<br>Unids.</th>
         <th>Para<br>Nodo</th>
         <th>Importe<br>Total</th>
     </tr>
@@ -33,7 +35,7 @@
                 {{ fila.producto.producto_variedad.producto.cantidad }}
                 {{ fila.producto.producto_variedad.producto.unidad }}
                 {% if fila.producto.producto_variedad.descripcion != "UNICA" %}
-                - {{ fila.producto.producto_variedad.descripcion }}
+                - {{ fila.producto.producto_variedad.descripcion|truncatewords:3 }}
                 {% endif %}
             </td>
             <td>{{ fila.producto.producto_ciclo.precio }}</td>
@@ -42,7 +44,7 @@
             {% endfor %}
 
             <td>{{ fila.cantidad_total }}</td>
-            <td>{{ fila.importe_nodo }}</td>
+            <td>{{ fila.importe_nodo|floatformat:"-2" }}</td>
             <td>{{ fila.importe_total }}</td>
         </tr>
         {% endfor %}
@@ -52,13 +54,13 @@
             <td>{{ total }}</td>
             {% endfor %}
             <td></td>
-            <td>{{ totales.importe_nodo }}</td>
+            <td>{{ totales.importe_nodo|floatformat:"-2" }}</td>
             <td>{{ totales.importe_total }}</td>
         </tr>
         <tr>
             <td colspan="{{ totales.columnas|length|add:3 }}"></td>
             <td colspan="2">Para la red Atizar:</td>
-            <td>{{ totales.importe_atizar }}</td>
+            <td>{{ totales.importe_atizar|floatformat:"-2" }}</td>
         </tr>
         </tbody>
 
