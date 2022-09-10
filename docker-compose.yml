@@ -1,0 +1,26 @@
+version: "3.9"
+   
+services:
+  db:
+    image: mysql:8.0
+    volumes:
+      - ./data/db:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - ${MYSQL_PORT}:${MYSQL_PORT}
+  web:
+    build: .
+    command: ./manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - ${PORT}:${PORT}
+    env_file:
+      - .env
+    environment:
+      - MYSQL_HOST=db
+    depends_on:
+      - db
