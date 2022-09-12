@@ -7,6 +7,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
@@ -115,6 +116,11 @@ class ProductoresLista(ListView):
 def panel_contacto(request):
     return render(request, 'abastece/panel-contacto.html', )
 
+@staff_member_required
+def pedidos_corregir(request):
+    nodos = Nodo.objects.filter(mostrar=True)
+    context = {'nodo_list': nodos, }
+    return render(request, 'abastece/pedido_corregir.html', context)
 
 @login_required
 def pedidos_planilla(request, id_nodo):
@@ -123,7 +129,8 @@ def pedidos_planilla(request, id_nodo):
         messages.add_message(request, messages.ERROR,
                              "Su usuario no está vinculado a ningún contacto. Solicite la vinculación.")
         return redirect(reverse_lazy('Panel'))
-    nodo = get_object_or_404(request.user.contacto.get_nodos_referente(), pk=id_nodo)
+    nodos_posibles = Nodo.objects.all() if request.user.is_staff else request.user.contacto.get_nodos_referente()
+    nodo = get_object_or_404(nodos_posibles, pk=id_nodo)
     pedidos = Pedido.objects.filter(consumidor__nodo=nodo, timestamp__range=(ciclo.inicio, ciclo.cierre))
     items = ItemPedido.objects.filter(pedido__in=pedidos)
     productos_variedad_ciclos = ProductoVariedadCiclo.objects.filter(itempedido__in=items). \
@@ -235,7 +242,7 @@ class PedidosEliminar(LoginRequiredMixin, DeleteView):
         es_referente = Membresia.objects.filter(contacto=self.request.user.contacto,
                                                 nodo=self.pedido.consumidor.nodo,
                                                 rol=2).exists()
-        if not es_referente:
+        if not es_referente and not request.user.is_staff:
             messages.add_message(request, messages.ERROR,
                                  "No es posible eliminar un pedido de un nodo en el que no es referente.")
             return redirect(self.get_success_url())
