@@ -1,0 +1,31 @@
+{% extends "abastece/base.html" %}
+{% block title %}Modificar pedidos por NODO{% endblock %}
+{% block content %}
+<main role="main">
+    <h1>MODIFICAR PEDIDOS POR NODO</h1>
+    <br>
+    {% if nodo_list %}
+    <table class="table">
+        <thead class="thead-dark">
+        <tr>
+            <th>Nombre</th>
+            <th>Contacto</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for nodo in nodo_list %}
+        <tr>
+
+            <td><a href="{% url 'pedido-planilla' nodo.id %}" class="link"> {{ nodo }}</a></td>
+            <td>{{ nodo.get_referente_nombre }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <br>
+
+    {% else %}
+    <p>No hay nodos.</p>
+    {% endif %}
+</main>
+{% endblock %}
