@@ -3,9 +3,10 @@ version: "3.9"
 services:
   web:
     build: .
-    command: ./manage.py runserver 0.0.0.0:8000
+    command: gunicorn --bind 0.0.0.0:${PORT} atizar.wsgi --workers=4
     volumes:
-      - .:/code
+      - ./static:/static
+      - ./media:/media
     ports:
       - ${PORT}:${PORT}
     env_file:
@@ -14,6 +15,9 @@ services:
       - MYSQL_HOST=db
     depends_on:
       - db
+    networks:
+      - atizar-nw
+    restart: unless-stopped
 
   db:
     image: mysql:8.0
@@ -24,4 +28,11 @@ services:
       - ${MYSQL_PORT}:${MYSQL_PORT}
     env_file:
       - .env
+    networks:
+      - atizar-nw
     restart: unless-stopped
+
+
+networks:
+  atizar-nw:
+    driver: bridge
