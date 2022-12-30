@@ -3,6 +3,7 @@
 *.pyc
 __pycache__
 media
+static
 .ideavenv/
 venv/
 data
