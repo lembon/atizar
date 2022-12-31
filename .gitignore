@@ -1,6 +1,10 @@
-env
+.env
 *.DS_Store
 *.pyc
 __pycache__
 media
-.idea
+static
+.ideavenv/
+venv/
+data
+backups

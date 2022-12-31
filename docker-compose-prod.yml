@@ -1,0 +1,38 @@
+version: "3.9"
+   
+services:
+  web:
+    build: .
+    command: gunicorn --bind 0.0.0.0:${PORT} atizar.wsgi --workers=4
+    volumes:
+      - ./static:/static
+      - ./media:/media
+    ports:
+      - ${PORT}:${PORT}
+    env_file:
+      - .env
+    environment:
+      - MYSQL_HOST=db
+    depends_on:
+      - db
+    networks:
+      - atizar-nw
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - ./data:/var/lib/mysql
+    ports:
+      - ${MYSQL_PORT}:${MYSQL_PORT}
+    env_file:
+      - .env
+    networks:
+      - atizar-nw
+    restart: unless-stopped
+
+
+networks:
+  atizar-nw:
+    driver: bridge
